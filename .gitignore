@@ -28,3 +28,6 @@ data/build/*.db
 .DS_Store
 .vercel
 npm-debug.log*
+
+# OCR assets copied from node_modules on postinstall
+public/tesseract/

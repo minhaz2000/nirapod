@@ -6,6 +6,10 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 const nextConfig: NextConfig = {
   // Native module used only inside Node-runtime route handlers.
   serverExternalPackages: ['better-sqlite3'],
+  // The SQLite file is read at runtime with fs, so tell output tracing to ship it with the medicine routes.
+  outputFileTracingIncludes: {
+    '/api/medicines/**/*': ['./data/build/medicines.sqlite'],
+  },
   async headers() {
     return [
       {

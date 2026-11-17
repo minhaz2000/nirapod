@@ -64,6 +64,7 @@ export default function CameraCapture({ label, onCapture, livePreview = false, s
             if (!file) return;
             setFileName(file.name);
             onCapture?.(file);
+            e.target.value = ''; // lets the same photo be chosen again after "Retake"
           }}
         />
       </label>

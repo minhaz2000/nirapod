@@ -22,6 +22,10 @@ npm run dev                  # http://localhost:3000 → redirects to /bn
 | `npm run lint` | ESLint (Next.js core-web-vitals + TypeScript) |
 | `npm test` | Vitest unit tests (`tests/unit`) |
 | `npm run test:e2e` | Playwright flows on a mobile viewport (`tests/e2e`; run `npm run build` first) |
-| `npm run build:data` | Build SQLite reference data from `data/raw/` CSVs into `data/build/` |
+| `npm run fetch:data` | Download the medicine data (medicinedb, MIT) into `data/raw/medicines/` |
+| `npm run build:data` | Build `data/build/medicines.sqlite` (fetches the raw files if missing). Vercel runs it before `next build` (`vercel.json`) |
 
 The service worker (`public/sw.js`) registers only in production builds.
+
+`npm install` also copies the tesseract.js OCR worker, WASM and eng/ben language files into `public/tesseract/`
+(git-ignored) so printed-text OCR runs on the phone, offline. Run `npm run build:data` before `npm run test:e2e`.

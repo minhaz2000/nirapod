@@ -16,8 +16,23 @@ does not allow redistribution. Licence column: fill in after checking.
 | Skin | SkinDiseaseBD | https://data.mendeley.com/datasets/9ggd3shdr7 | TODO: verify |
 | Skin | Benchmark Image Dataset for Scabies Detection | https://data.mendeley.com/datasets/6scrcbtzbx/1 · https://data.mendeley.com/datasets/mg6sb9b8x4/1 | TODO: verify |
 | Skin | SkinDisNet | https://data.mendeley.com/datasets/yj3md44hxg/2 | TODO: verify |
-| Medicines | Assorted Medicine Dataset of Bangladesh | https://github.com/ahmedshahriar/bd-medicine-scraper | TODO: verify |
+| **Medicines (in use)** | medicinedb — Bangladesh medicine database (SQLite/CSV/JSON) | https://github.com/WSAyan/medicinedb (pinned commit `a3863e9`) | **MIT**, © 2021 Wahid Sadique Ayan |
+| Medicines (alternative, not used) | Assorted Medicine Dataset of Bangladesh | https://github.com/ahmedshahriar/bd-medicine-scraper | TODO: verify |
 | Handwriting (optional) | Doctor's Handwritten Prescription BD (Kaggle: mamun1113) | Kaggle | TODO: verify |
 
 Notes: use only the **Original** folder of the scabies benchmark (augmented copies leak between train and test);
 split SkinDisNet by patient.
+
+## Medicine reference data (medicinedb)
+
+- **Source:** https://github.com/WSAyan/medicinedb, commit `a3863e9a1864ef7eb65a7a2b9d392ded171c62c0` (last commit 2021-09-29).
+- **Licence:** MIT, Copyright (c) 2021 Wahid Sadique Ayan. The repository's licence covers the database files.
+  The repo does not say where the underlying medicine information was originally collected from.
+- **Age:** the repo README (2021) says the data was then "almost 4 years old". Prices are therefore approximate and
+  likely lower than today's; the app says so wherever a price is shown.
+- **Files used:** `csv/brands.csv`, `csv/companies.csv`, `csv/therapitics.csv`, `csv/therapitics_generics.csv`,
+  and the `generic` table of `medicine.db`. `csv/generics.csv` is **not** used: its long free-text columns contain
+  unquoted commas, so columns shift (e.g. Omeprazole's "indication" reads " prolonged use").
+- **Where:** `data/raw/medicines/` (git-ignored). `npm run fetch:data` downloads the pinned files; `npm run build:data`
+  fetches them if missing and writes `data/build/medicines.sqlite` (also git-ignored). The Vercel build runs
+  `npm run build:data` first (see `vercel.json`).
