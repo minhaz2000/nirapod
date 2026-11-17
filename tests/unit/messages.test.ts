@@ -41,4 +41,20 @@ describe('messages', () => {
     expect(enFlat['diabetes.lowSugarBody']).toMatch(/999/);
     expect(enFlat['diabetes.lowSugarBody']).not.toMatch(/reduce|less food|skip/i);
   });
+
+  it('999 copy names police, fire service and ambulance providers', () => {
+    expect(enFlat['emergency.about999']).toMatch(/police/i);
+    expect(enFlat['emergency.about999']).toMatch(/fire/i);
+    expect(enFlat['emergency.about999']).toMatch(/ambulance/i);
+    expect(bnFlat['emergency.about999']).toMatch(/পুলিশ/);
+    expect(bnFlat['emergency.about999']).toMatch(/ফায়ার/);
+    expect(bnFlat['emergency.about999']).toMatch(/অ্যাম্বুলেন্স/);
+  });
+
+  it('never claims ambulances are free', () => {
+    const freeAmbulance = /(ambulance[^.]*\bfree\b|\bfree\b[^.]*ambulance)/i;
+    for (const [k, v] of Object.entries(enFlat)) expect(v, k).not.toMatch(freeAmbulance);
+    const freeAmbulanceBn = /(অ্যাম্বুলেন্স[^।]*বিনামূল্যে|বিনামূল্যে[^।]*অ্যাম্বুলেন্স)/;
+    for (const [k, v] of Object.entries(bnFlat)) expect(v, k).not.toMatch(freeAmbulanceBn);
+  });
 });
