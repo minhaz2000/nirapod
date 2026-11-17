@@ -23,23 +23,78 @@
     "button": "Emergency 999",
     "buttonLabel": "Emergency help — open emergency page",
     "title": "Emergency Support",
-    "intro": "If someone is in danger, call 999 now. This page is always free.",
+    "intro": "If someone may be in danger, call 999 now.",
+    "about999": "999 is Bangladesh's national emergency number. It connects you to police, fire service and ambulance providers.",
+    "cost": "Calling 999 is free. Ambulance services may charge a fee.",
     "call999": "Call 999",
     "shareLocation": "Share my location",
-    "locationSharing": "Getting location…",
-    "locationShared": "Location ready to share",
+    "locationSharing": "Getting your location…",
+    "locationReady": "Your location link:",
     "locationError": "Could not get your location. Please tell the operator where you are.",
-    "nearbyHospitals": "Find nearby hospitals",
-    "dangerSignsTitle": "Danger signs — call 999 right away",
-    "dangerSigns": {
-      "breathing": "Severe difficulty breathing",
-      "chestPain": "Chest pain or pressure",
-      "unconscious": "Fainting, unconscious or not waking up",
-      "bleeding": "Heavy bleeding that does not stop",
-      "lowSugar": "Very low blood sugar with confusion or shaking",
-      "stroke": "Sudden face drooping, arm weakness or slurred speech"
+    "shareAgain": "Share link",
+    "copyLink": "Copy link",
+    "linkCopied": "Link copied. Paste it in a message.",
+    "shareText": "I need help. My location:",
+    "nearbyHospitals": "Nearby hospitals",
+    "nearbyHospitalsHint": "Opens a map search. Share your location first for better results.",
+    "checklistTitle": "Is any of these happening now?",
+    "checklistHint": "Tap every sign you see. Any one of them means: call 999.",
+    "groups": {
+      "heart": "Heart",
+      "stroke": "Stroke signs (FAST)",
+      "breathing": "Breathing",
+      "consciousness": "Consciousness",
+      "bleeding": "Bleeding",
+      "glucose": "Blood sugar"
     },
-    "free": "Emergency support is always free."
+    "strokeTime": "T = Time: note when the signs started and call 999 at once.",
+    "signs": {
+      "chestPain": {
+        "label": "Chest pain or pressure",
+        "hint": "May spread to the arm, jaw or back, or come with sweating."
+      },
+      "strokeFace": {
+        "label": "F — Face drooping on one side",
+        "hint": "Ask them to smile. Is one side of the face drooping?"
+      },
+      "strokeArm": {
+        "label": "A — Arm or leg weak on one side",
+        "hint": "Ask them to raise both arms. Does one drift down?"
+      },
+      "strokeSpeech": {
+        "label": "S — Speech slurred or strange",
+        "hint": "Ask them to repeat a simple sentence."
+      },
+      "breathing": {
+        "label": "Severe difficulty breathing",
+        "hint": "Cannot speak in full sentences, or lips turning blue."
+      },
+      "unconscious": {
+        "label": "Unconscious or not responding",
+        "hint": "Does not wake up or answer when you speak or tap them."
+      },
+      "bleeding": {
+        "label": "Heavy bleeding that will not stop",
+        "hint": "Keeps bleeding even with firm pressure."
+      },
+      "lowGlucose": {
+        "label": "Blood sugar below {mmol, number} mmol/L ({mgdl, number} mg/dL)",
+        "hint": "Or shaking, sweating and confusion in a person with diabetes."
+      }
+    },
+    "selectedCount": "{count, plural, one {# sign selected} other {# signs selected}}",
+    "alert": {
+      "title": "Possible emergency — call 999 now",
+      "youSelected": "Signs you selected:",
+      "close": "Back to checklist",
+      "reopen": "Show emergency help"
+    },
+    "advice": {
+      "noteTime": "Note the time the stroke signs started and tell the doctor.",
+      "sweetIfAwake": "If the person is awake and can swallow, give something sweet now (juice, sugar or glucose).",
+      "nothingByMouth": "Do not give food or drink to someone who is unconscious."
+    },
+    "free": "This Nirapod feature is always free to use."
   },
   "home": {
     "cameraButton": "Take a photo",
