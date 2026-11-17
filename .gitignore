@@ -1,0 +1,30 @@
+# deps
+node_modules/
+
+# next
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+# env
+.env
+.env*.local
+
+# tests
+playwright-report/
+test-results/
+coverage/
+
+# data: raw CSVs are git-ignored unless their licence allows redistribution
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/README.md
+data/build/*.sqlite
+data/build/*.db
+
+# misc
+.DS_Store
+.vercel
+npm-debug.log*

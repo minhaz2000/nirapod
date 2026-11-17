@@ -1,0 +1,129 @@
+{
+  "app": {
+    "name": "Nirapod",
+    "tagline": "Your Health, Our Priority",
+    "description": "One camera, four protections: diabetes companion, private skin screening, medicine safety and emergency support."
+  },
+  "nav": {
+    "home": "Home",
+    "diabetes": "Diabetes",
+    "skin": "Skin",
+    "medicine": "Medicine",
+    "emergency": "Emergency",
+    "settings": "Settings",
+    "about": "About",
+    "back": "Back to home",
+    "main": "Main navigation"
+  },
+  "language": {
+    "label": "Language",
+    "switchTo": "বাংলা"
+  },
+  "emergency": {
+    "button": "Emergency 999",
+    "buttonLabel": "Emergency help — open emergency page",
+    "title": "Emergency Support",
+    "intro": "If someone is in danger, call 999 now. This page is always free.",
+    "call999": "Call 999",
+    "shareLocation": "Share my location",
+    "locationSharing": "Getting location…",
+    "locationShared": "Location ready to share",
+    "locationError": "Could not get your location. Please tell the operator where you are.",
+    "nearbyHospitals": "Find nearby hospitals",
+    "dangerSignsTitle": "Danger signs — call 999 right away",
+    "dangerSigns": {
+      "breathing": "Severe difficulty breathing",
+      "chestPain": "Chest pain or pressure",
+      "unconscious": "Fainting, unconscious or not waking up",
+      "bleeding": "Heavy bleeding that does not stop",
+      "lowSugar": "Very low blood sugar with confusion or shaking",
+      "stroke": "Sudden face drooping, arm weakness or slurred speech"
+    },
+    "free": "Emergency support is always free."
+  },
+  "home": {
+    "cameraButton": "Take a photo",
+    "cameraHint": "Photograph a plate of food, a skin problem, or a medicine pack or prescription.",
+    "modulesTitle": "What would you like to check?",
+    "cards": {
+      "diabetes": {
+        "title": "Diabetes Companion",
+        "desc": "Photo of your plate → green, amber or red signal for your meal."
+      },
+      "skin": {
+        "title": "Private Skin Screening",
+        "desc": "Check for possible scabies. Your photo never leaves this phone."
+      },
+      "medicine": {
+        "title": "Medicine Safety",
+        "desc": "Understand prescriptions and reports, check expiry and find cheaper same-generic brands."
+      },
+      "emergency": {
+        "title": "Emergency Support",
+        "desc": "Danger signs, one tap to call 999, share your location."
+      }
+    }
+  },
+  "camera": {
+    "take": "Take or choose a photo",
+    "selected": "Photo selected: {name}",
+    "livePreview": "Live camera preview",
+    "startPreview": "Start live camera",
+    "stopPreview": "Stop camera",
+    "previewUnavailable": "Live preview is not available on this device. Use the button above instead."
+  },
+  "model": {
+    "notLoaded": "Model not loaded yet. This feature will work once the model is added.",
+    "notSure": "Not sure — please see a doctor",
+    "confidence": "Confidence: {value}%"
+  },
+  "diabetes": {
+    "title": "Diabetes Companion",
+    "intro": "Take a photo of your plate. Nirapod will try to recognise the food, estimate the portion and show a green, amber or red signal.",
+    "trial": "Free for 7 weeks from first use.",
+    "lowSugarTitle": "Blood sugar below 3.9 mmol/L (70 mg/dL)?",
+    "lowSugarBody": "Take something sweet now (juice, sugar or glucose). If you feel confused or faint, call 999.",
+    "disclaimer": "This is guidance, not a diagnosis. Never stop, start or change any medicine or insulin dose on your own — ask your doctor or pharmacist."
+  },
+  "skin": {
+    "title": "Private Skin Screening",
+    "intro": "Take a clear photo of the skin area in good light. Nirapod will show how likely it may be scabies, with a confidence value.",
+    "privacy": "Your skin photo is checked on this phone only. It is never uploaded.",
+    "disclaimer": "This is a screening aid, not a diagnosis. If you are worried, please see a doctor."
+  },
+  "medicine": {
+    "title": "Medicine Safety",
+    "intro": "Take photos of a prescription, a test report or a medicine pack. Nirapod will explain it in plain language and check expiry, duplicates and interactions.",
+    "packaging": "Nirapod only lists suspicious signs on packaging. It cannot verify where a medicine came from.",
+    "disclaimer": "Do not stop or change any medicine on your own. Ask your doctor or pharmacist.",
+    "pharmacist": "Confirm with your pharmacist."
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "glucoseUnit": "Blood glucose unit",
+    "mmol": "mmol/L",
+    "mgdl": "mg/dL",
+    "demoMode": "Demo mode",
+    "demoModeHint": "Loads sample images so the full flow can be shown without real data.",
+    "on": "On",
+    "off": "Off",
+    "dataTitle": "Your data",
+    "dataHint": "All your data is stored only on this phone.",
+    "deleteAll": "Delete all my data",
+    "deleteConfirm": "Delete all your data from this phone? This cannot be undone.",
+    "deleteDone": "All your data has been deleted."
+  },
+  "about": {
+    "title": "About Nirapod",
+    "body": "Nirapod is a free, bilingual health helper for people in Bangladesh. It works on your phone, and most features work without internet.",
+    "guide": "Nirapod gives guidance only. It does not diagnose and does not replace a doctor.",
+    "privacy": "Your data stays on your phone. Skin photos never leave the device.",
+    "consultation": "Online doctor consultation",
+    "comingSoon": "Coming soon (Premium)",
+    "version": "Version {version}"
+  },
+  "common": {
+    "comingSoon": "Coming soon"
+  }
+}
