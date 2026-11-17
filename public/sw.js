@@ -1,10 +1,10 @@
 /* Nirapod service worker — offline shell.
  * - Precaches the app shell (both locales + their static chunks) and an offline fallback page.
  * - Navigations: network first, fall back to cache, then the offline page.
- * - Static assets and on-device models: cache first.
+ * - Static assets, on-device models and OCR files (/tesseract/): cache first, so OCR works offline after first use.
  * - /api/*: never cached (nothing about the user is stored server-side or in the SW cache).
  */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const SHELL_CACHE = `nirapod-shell-${VERSION}`;
 const ASSET_CACHE = `nirapod-assets-${VERSION}`;
 const SHELL_PAGES = ['/bn', '/en', '/bn/emergency', '/en/emergency'];
@@ -82,7 +82,9 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/_next/static/') ||
     url.pathname.startsWith('/models/') ||
     url.pathname.startsWith('/icons/') ||
-    /\.(?:woff2?|png|svg|wasm|json|onnx)$/.test(url.pathname)
+    url.pathname.startsWith('/tesseract/') ||
+    url.pathname.startsWith('/samples/') ||
+    /\.(?:woff2?|png|svg|wasm|json|onnx|gz)$/.test(url.pathname)
   ) {
     event.respondWith(
       (async () => {

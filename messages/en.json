@@ -151,7 +151,94 @@
     "intro": "Take photos of a prescription, a test report or a medicine pack. Nirapod will explain it in plain language and check expiry, duplicates and interactions.",
     "packaging": "Nirapod only lists suspicious signs on packaging. It cannot verify where a medicine came from.",
     "disclaimer": "Do not stop or change any medicine on your own. Ask your doctor or pharmacist.",
-    "pharmacist": "Confirm with your pharmacist."
+    "pharmacist": "Confirm with your pharmacist.",
+    "scan": {
+      "title": "Scan a medicine pack",
+      "hint": "Take a clear, flat photo of the side of the pack with the name, batch number and dates.",
+      "takePhoto": "Photograph the pack",
+      "orType": "Or type the brand name",
+      "searchPlaceholder": "e.g. Napa",
+      "search": "Search",
+      "demoTitle": "Demo samples",
+      "demoOk": "Sample pack",
+      "demoCheck": "Sample pack with problems",
+      "steps": {
+        "checking": "Checking photo quality…",
+        "reading": "Reading the pack on this phone… {percent}%",
+        "looking": "Looking up the medicine…"
+      },
+      "quality": {
+        "title": "This photo may be hard to read",
+        "tooSmall": "The photo is too small.",
+        "tooDark": "The photo is too dark. Move to better light.",
+        "tooBright": "The photo is too bright or has glare. Tilt the pack away from the light.",
+        "blurry": "The photo looks blurred. Hold the phone steady and tap to focus.",
+        "retake": "Retake photo",
+        "continue": "Continue anyway"
+      },
+      "privacy": "The photo is read on this phone. Only the brand name is sent to look up the medicine.",
+      "confirm": {
+        "title": "Which medicine is this?",
+        "readAs": "We read: {words}",
+        "nothingRead": "We could not read a brand name. Please type it.",
+        "choose": "Choose the brand, strength and form printed on your pack.",
+        "notListed": "Not in the list? Type the brand name:",
+        "noMatch": "No medicine found for “{query}”. Check the spelling.",
+        "use": "This is my medicine"
+      },
+      "result": {
+        "whatItIs": "What it is",
+        "generic": "Generic name",
+        "strengthForm": "Strength and form",
+        "manufacturer": "Manufacturer",
+        "drugClass": "Type of medicine",
+        "usedFor": "Commonly used for",
+        "usedForNote": "From the medicine database (English).",
+        "expiry": "Expiry",
+        "expiryOk": "Use before {date}.",
+        "expiresSoon": "Expires soon: use before {date}.",
+        "expired": "The expiry date ({date}) has passed. Ask your pharmacist before using it.",
+        "expiryUnknown": "We could not read the expiry date. Please check the pack yourself.",
+        "signsTitle": "Suspicious signs",
+        "signsFound": "{count, plural, one {# suspicious sign found:} other {# suspicious signs found:}}",
+        "noSigns": "No suspicious signs found",
+        "signsNote": "These are things to check, not a judgement about the medicine. If you are worried, show the pack to your pharmacist. Do not stop any medicine on your own.",
+        "signs": {
+          "brandSpelling": "The brand name on the pack (“{printed}”) is spelled differently from the registered name “{expected}”. This can also be a reading error, so please look at the pack yourself.",
+          "manufacturerSpelling": "The company name on the pack (“{printed}”) is spelled differently from “{expected}”. This can also be a reading error, so please look at the pack yourself.",
+          "missingBatch": "No batch number found on the pack.",
+          "missingExpiry": "No expiry date found on the pack.",
+          "expiryBeforeManufacture": "The expiry date ({exp}) is not after the manufacture date ({mfg}).",
+          "expired": "The expiry date ({exp}) has passed.",
+          "priceFarBelow": "The printed price ({printed} each) is far below the usual price ({usual} each)."
+        },
+        "alternativesTitle": "Cheaper brands with the same medicine",
+        "alternativesHint": "Same generic, same strength and same form.",
+        "noCheaper": "No cheaper brand with the same generic, strength and form was found.",
+        "notComparable": {
+          "generic_unknown": "We cannot compare prices because the generic name is missing in the database.",
+          "strength_unknown": "We cannot compare prices because the strength is missing in the database.",
+          "price_unknown": "We cannot compare prices because this brand has no price in the database."
+        },
+        "priceEach": "{price} {unit, select, piece {each} ml {per ml} g {per g} dose {per dose} other {}}",
+        "pharmacist": "Confirm with your pharmacist.",
+        "pricesNote": "Prices are approximate. They come from a public medicine database last updated in {date}, so today's prices may be higher.",
+        "readTitle": "What we read on the pack",
+        "batch": "Batch",
+        "mfg": "Manufactured",
+        "exp": "Expiry",
+        "printedPrice": "Printed price",
+        "registration": "Registration no.",
+        "notFound": "Not found",
+        "scanAnother": "Scan another pack"
+      },
+      "errors": {
+        "ocr": "Could not read the photo. Please try again with a clearer photo.",
+        "offline": "Looking up a medicine needs internet. The photo was read on your phone; please connect and try again.",
+        "dataMissing": "The medicine database is not available yet.",
+        "generic": "Something went wrong. Please try again."
+      }
+    }
   },
   "settings": {
     "title": "Settings",

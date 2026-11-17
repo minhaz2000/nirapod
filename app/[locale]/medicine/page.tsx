@@ -2,8 +2,8 @@ import { use } from 'react';
 import { useTranslations } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import PageShell from '@/components/PageShell';
-import CameraCapture from '@/components/CameraCapture';
 import Notice from '@/components/Notice';
+import ScanPack from '@/components/medicine/ScanPack';
 
 export default function MedicinePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);
@@ -12,7 +12,7 @@ export default function MedicinePage({ params }: { params: Promise<{ locale: str
   return (
     <PageShell title={t('title')}>
       <p>{t('intro')}</p>
-      <CameraCapture />
+      <ScanPack />
       <Notice tone="warning">{t('disclaimer')}</Notice>
       <p className="text-sm text-slate-700">{t('packaging')}</p>
     </PageShell>
