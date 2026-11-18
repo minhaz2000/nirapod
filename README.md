@@ -9,7 +9,7 @@ One camera screen, four protections:
 |---|---|---|
 | **Emergency Support** | Tap-to-select danger signs (chest pain, FAST stroke signs, breathing, unconsciousness, bleeding, low blood sugar) → full-screen alert with one-tap 999, share location, nearby hospitals | ✅ built |
 | **Medicine Safety** | Scan a medicine pack (on-device OCR) → what it is, expiry, suspicious signs, cheaper same-generic brands. Explain a printed lab report and a prescription together: double doses, interactions, allergy / pregnancy flags, plain-language explanation | ✅ built |
-| **Diabetes Companion** | Plate photo → on-device food recognition (16 Bangladeshi foods) → portion check → green / amber / red signal, personalised from 2-hour glucose readings | ✅ core built (Full care in progress) |
+| **Diabetes Companion** | Plate photo → on-device food recognition (16 Bangladeshi foods) → one-tap portion check → green / amber / red signal, personalised from 2-hour glucose readings. Full care: meal / walk / medicine / check-up reminders, glucose charts, printable doctor report, family mode, weekly summary | ✅ built (7-week trial, then a Premium stub; sugar entry and low-sugar help always free) |
 | **Private Skin Screening** | Skin photo → scabies likelihood with confidence, on the phone only | ⏳ model not trained yet (the page shows "model not loaded yet") |
 
 Built for the International AI Builders Congress 2026 (Idea to Unicorn track, HealthSphere AI). Project guide and
@@ -40,8 +40,10 @@ npm run dev                  # http://localhost:3000 → /bn
 | `npm run fetch:data` | Download the medicine data (pinned GitHub commit) into `data/raw/medicines/` |
 | `npm run build:data` | Build `data/build/medicines.sqlite` (fetches the raw files if missing) |
 
-**Demo mode** (Settings → Demo mode) adds sample medicine packs, a sample lab report and a sample prescription, so
-every flow can be shown on stage without real data or an API key.
+**Demo mode** (Settings → Demo mode) adds sample medicine packs, a sample lab report, a sample prescription and, in
+the Diabetes Companion, a demo profile with two weeks of sample glucose, meal and medicine data, so every flow can be
+shown on stage without real data or an API key. Demo plate photos go in `public/samples/plate-1.jpg` and
+`plate-2.jpg`; their buttons appear only when the files exist.
 
 ## Environment variables
 
@@ -94,7 +96,10 @@ Every rule has tests in `tests/`.
 9. **Privacy** — skin photos never leave the phone; prescription photos have their header cropped off; text is redacted (`lib/privacy/redact.ts`) before every server call; nothing is stored on the server; personal data stays in IndexedDB and "Delete all my data" wipes it.
 10. **Cheaper alternatives** match generic, strength and dosage form exactly, with "Confirm with your pharmacist".
 11. **Emergency is free and one tap away on every screen.**
-12. **Clinical thresholds live in `config/`**, each marked "needs clinician review" (or pharmacist review).
+12. **Clinical thresholds live in `config/`**, each marked "needs clinician review" (or pharmacist / nutritionist review):
+    `glucose.ts`, `glucose-targets.ts`, `meal-signal.ts`, `checkups.ts`, `report-ranges.ts`, `interactions.ts`,
+    `allergy-groups.ts`, `medicine-test-links.ts`, `medicine-checks.ts`, `danger-signs.ts`, `portion.ts`,
+    `food-class-map.csv`.
 
 ## Project layout
 

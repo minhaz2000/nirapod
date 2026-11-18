@@ -11,6 +11,7 @@ import { clampPlate } from '@/lib/rules/portion';
 import type { DiabetesProfile } from '@/lib/store/db';
 import { saveDiabetesProfile } from '@/lib/store/diabetes';
 import { updateSettings } from '@/lib/store/settings';
+import { loadDemoData } from '@/lib/store/demo';
 import LowGlucoseAlert from './LowGlucoseAlert';
 
 interface Props {
@@ -65,8 +66,9 @@ export default function Onboarding({ personId, unit, onUnit, demo, onDone }: Pro
     await finish({ proof, fastingMmol: mmol, hba1c: h, plate: p }, isLowGlucose(mmol));
   }
 
-  async function useDemo() {
+  async function startDemo(withData: boolean) {
     const blob = await (await fetch('/samples/prescription.png')).blob();
+    if (withData) await loadDemoData(personId);
     await finish({ proof: blob, fastingMmol: 8.4, hba1c: 7.6, plate: 26 });
   }
 
@@ -139,9 +141,14 @@ export default function Onboarding({ personId, unit, onUnit, demo, onDone }: Pro
         {t('start')}
       </button>
       {demo && (
-        <button type="button" onClick={useDemo} data-testid="onboarding-demo" className="min-h-12 w-full rounded-xl border-2 border-dashed border-teal-700 px-4 font-semibold text-teal-900">
-          {t('demo')}
-        </button>
+        <div className="space-y-2">
+          <button type="button" onClick={() => startDemo(false)} data-testid="onboarding-demo" className="min-h-12 w-full rounded-xl border-2 border-dashed border-teal-700 px-4 font-semibold text-teal-900">
+            {t('demo')}
+          </button>
+          <button type="button" onClick={() => startDemo(true)} data-testid="onboarding-demo-data" className="min-h-12 w-full rounded-xl border-2 border-dashed border-teal-700 px-4 font-semibold text-teal-900">
+            {t('demoData')}
+          </button>
+        </div>
       )}
     </section>
   );

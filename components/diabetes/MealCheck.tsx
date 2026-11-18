@@ -42,11 +42,30 @@ export default function MealCheck({ personId, profile, demo, onSaved }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const bitmapRef = useRef<ImageBitmap | null>(null);
 
+  const [plates, setPlates] = useState<string[]>([]);
   useEffect(() => {
     getNutritionTable()
       .then(setNutrition)
       .catch(() => setNutrition(null));
   }, []);
+
+  // Demo plates are shown only if the sample photos are present in public/samples/.
+  useEffect(() => {
+    if (!demo) return;
+    let alive = true;
+    Promise.all(
+      DEMO_PLATES.map((src): Promise<string | null> =>
+        fetch(src, { method: 'HEAD' })
+          .then((r) => (r.ok ? src : null))
+          .catch(() => null),
+      ),
+    ).then((found) => {
+      if (alive) setPlates(found.filter((x): x is string => x !== null));
+    });
+    return () => {
+      alive = false;
+    };
+  }, [demo]);
 
   const classes = model?.meta.classes ?? (nutrition ? Object.keys(nutrition).sort() : []);
 
@@ -130,11 +149,11 @@ export default function MealCheck({ personId, profile, demo, onSaved }: Props) {
           <CameraCapture label={t('takePhoto')} onCapture={analyse} livePreview />
           {!model && <p className="text-sm text-slate-700">{t('noModel')}</p>}
           <p className="text-sm text-slate-700">{t('privacy')}</p>
-          {demo && (
+          {demo && plates.length > 0 && (
             <div className="space-y-2 rounded-2xl border-2 border-dashed border-teal-700 p-3" data-testid="demo-plates">
               <p className="font-semibold">{t('samples')}</p>
               <div className="flex gap-2">
-                {DEMO_PLATES.map((src, i) => (
+                {plates.map((src, i) => (
                   <button
                     key={src}
                     type="button"

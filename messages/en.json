@@ -189,7 +189,8 @@
       "demo": "Use the demo profile",
       "levelTitle": "Your starting level",
       "levelNote": "Based only on what you entered. It sets how strict the meal signals are. Your doctor knows best.",
-      "continue": "Continue"
+      "continue": "Continue",
+      "demoData": "Use the demo profile with two weeks of sample data"
     },
     "level": {
       "good": "Good control",
