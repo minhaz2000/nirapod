@@ -10,7 +10,7 @@ does not allow redistribution. Licence column: fill in after checking.
 
 | Use | Dataset | Link | Licence |
 |---|---|---|---|
-| Food images | PUST Cafeteria Food (YOLO-seg ready) | https://data.mendeley.com/datasets/fn6yhzjz83/2 | TODO: verify |
+| **Food images (in use: `food_seg.ipynb`)** | PUST Cafeteria Food Image Dataset, v2 (YOLO-seg ready) | https://data.mendeley.com/datasets/fn6yhzjz83/2 · DOI [10.17632/fn6yhzjz83.2](https://doi.org/10.17632/fn6yhzjz83.2) | **TODO: read the licence on the Mendeley page** (not reachable from the build environment) |
 | Food images | FoodBD (67 classes, polygons) | https://doi.org/10.17632/xh3ghf3jbg.2 | TODO: verify |
 | Food nutrition | FoodNetBD | https://data.mendeley.com/datasets/23f7yxnvy7/1 | CC BY 4.0 |
 | Skin | SkinDiseaseBD | https://data.mendeley.com/datasets/9ggd3shdr7 | TODO: verify |
@@ -36,3 +36,19 @@ split SkinDisNet by patient.
 - **Where:** `data/raw/medicines/` (git-ignored). `npm run fetch:data` downloads the pinned files; `npm run build:data`
   fetches them if missing and writes `data/build/medicines.sqlite` (also git-ignored). The Vercel build runs
   `npm run build:data` first (see `vercel.json`).
+
+## Food segmentation (`food_seg.ipynb`)
+
+- **Dataset:** PUST Cafeteria Food Image Dataset, Mendeley Data, version 2 (published 2026-08-28),
+  DOI [10.17632/fn6yhzjz83.2](https://doi.org/10.17632/fn6yhzjz83.2). 720 meal-platter photos taken 1 Aug – 5 Sep 2025
+  at the Central Cafeteria of Pabna University of Science and Technology, on two phones (Realme GT Master Edition,
+  OPPO A92). Annotations ship as YOLO_detect (boxes), YOLO_seg (polygons) and COCO JSON; the notebook uses YOLO_seg.
+- **Licence:** not yet confirmed — Mendeley shows it under the dataset title. Record it here before committing any
+  dataset files or publishing results. The images are **not** committed to this repository; Kaggle reads them from a
+  private Kaggle dataset.
+- **Dataset authors' caveat:** billing, portion, calorie or dietary assessment needs additional validated external
+  information. Nirapod uses the model only to recognise foods and shows a green/amber/red signal, not grams.
+- **Model:** Ultralytics YOLO11n-seg (AGPL-3.0 licensed code and weights; an Enterprise licence is needed to ship it
+  in a closed-source product), fine-tuned for a fixed time budget on a Kaggle T4.
+- **Outputs:** `food_seg.onnx` + `food_seg.json` → `public/models/`; `metrics.json`, `per_class_ap.csv`,
+  `confusion_matrix*.png`, `sample_predictions.jpg` → keep as evidence for the submission.
