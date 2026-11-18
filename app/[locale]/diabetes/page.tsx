@@ -2,9 +2,8 @@ import { use } from 'react';
 import { useTranslations } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import PageShell from '@/components/PageShell';
-import CameraCapture from '@/components/CameraCapture';
-import ModelStatus from '@/components/ModelStatus';
 import Notice from '@/components/Notice';
+import DiabetesApp from '@/components/diabetes/DiabetesApp';
 
 export default function DiabetesPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);
@@ -17,9 +16,7 @@ export default function DiabetesPage({ params }: { params: Promise<{ locale: str
         <p>{t('lowSugarBody')}</p>
       </Notice>
       <p>{t('intro')}</p>
-      <Notice>{t('trial')}</Notice>
-      <CameraCapture livePreview />
-      <ModelStatus name="food_seg" />
+      <DiabetesApp />
       <p className="text-sm text-slate-700">{t('disclaimer')}</p>
     </PageShell>
   );

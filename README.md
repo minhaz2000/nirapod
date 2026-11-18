@@ -9,7 +9,7 @@ One camera screen, four protections:
 |---|---|---|
 | **Emergency Support** | Tap-to-select danger signs (chest pain, FAST stroke signs, breathing, unconsciousness, bleeding, low blood sugar) → full-screen alert with one-tap 999, share location, nearby hospitals | ✅ built |
 | **Medicine Safety** | Scan a medicine pack (on-device OCR) → what it is, expiry, suspicious signs, cheaper same-generic brands. Explain a printed lab report and a prescription together: double doses, interactions, allergy / pregnancy flags, plain-language explanation | ✅ built |
-| **Diabetes Companion** | Plate photo → Bangladeshi food recognition → green / amber / red signal | 🟡 model trained and deployed (`public/models/food_seg.onnx`); feature not built yet |
+| **Diabetes Companion** | Plate photo → on-device food recognition (16 Bangladeshi foods) → one-tap portion check → green / amber / red signal, personalised from 2-hour glucose readings. Full care: meal / walk / medicine / check-up reminders, glucose charts, printable doctor report, family mode, weekly summary | ✅ built (7-week trial, then a Premium stub; sugar entry and low-sugar help always free) |
 | **Private Skin Screening** | Skin photo → scabies likelihood with confidence, on the phone only | ⏳ model not trained yet (the page shows "model not loaded yet") |
 
 Built for the International AI Builders Congress 2026 (Idea to Unicorn track, HealthSphere AI). Project guide and
@@ -40,8 +40,10 @@ npm run dev                  # http://localhost:3000 → /bn
 | `npm run fetch:data` | Download the medicine data (pinned GitHub commit) into `data/raw/medicines/` |
 | `npm run build:data` | Build `data/build/medicines.sqlite` (fetches the raw files if missing) |
 
-**Demo mode** (Settings → Demo mode) adds sample medicine packs, a sample lab report and a sample prescription, so
-every flow can be shown on stage without real data or an API key.
+**Demo mode** (Settings → Demo mode) adds sample medicine packs, a sample lab report, a sample prescription and, in
+the Diabetes Companion, a demo profile with two weeks of sample glucose, meal and medicine data, so every flow can be
+shown on stage without real data or an API key. Demo plate photos go in `public/samples/plate-1.jpg` and
+`plate-2.jpg`; their buttons appear only when the files exist.
 
 ## Environment variables
 
@@ -70,7 +72,7 @@ works: prescriptions are typed or picked from the medicine list, and explanation
 |---|---|---|---|
 | Medicine database (brands, generics, prices, pregnancy categories) | [WSAyan/medicinedb](https://github.com/WSAyan/medicinedb), commit `a3863e9` (last updated 2021-09; prices are approximate and old) | MIT © 2021 Wahid Sadique Ayan | No — fetched at build time (`data/raw/` is git-ignored) |
 | Food images for `food_seg` | PUST Cafeteria Food Image Dataset, Mendeley Data v2, DOI [10.17632/fn6yhzjz83.2](https://doi.org/10.17632/fn6yhzjz83.2) | **To confirm** on the Mendeley page | No — trained on Kaggle |
-| Food nutrition | FoodNetBD (bilingual, disease-annotated nutrition table) | CC BY 4.0 (attribution required) | Yes — `data/FoodNetBD …zip` (not used yet) |
+| Food nutrition | FoodNetBD (bilingual, disease-annotated nutrition table, 600 foods); mapping of the 16 model classes in `config/food-class-map.csv` | CC BY 4.0 (attribution shown in the app) | Yes — `data/raw/nutrition/FoodNetBD.csv` → `data/build/nutrition.sqlite` |
 | Food segmentation model `public/models/food_seg.onnx` | Ultralytics YOLO11n-seg fine-tuned in [`notebooks/food_seg.ipynb`](notebooks/food_seg.ipynb): mask mAP50 0.867, mAP50-95 0.764 on 108 test images, 16 classes | **AGPL-3.0** (Ultralytics code and weights); a closed-source product needs an Ultralytics Enterprise licence | Yes (11.7 MB) |
 | OCR language data (eng, ben) | `@tesseract.js-data`, tessdata 4.0.0_best_int | Apache-2.0 | No — copied from `node_modules` |
 | ONNX Runtime Web | `onnxruntime-web` | MIT | No — copied from `node_modules` |
@@ -94,7 +96,10 @@ Every rule has tests in `tests/`.
 9. **Privacy** — skin photos never leave the phone; prescription photos have their header cropped off; text is redacted (`lib/privacy/redact.ts`) before every server call; nothing is stored on the server; personal data stays in IndexedDB and "Delete all my data" wipes it.
 10. **Cheaper alternatives** match generic, strength and dosage form exactly, with "Confirm with your pharmacist".
 11. **Emergency is free and one tap away on every screen.**
-12. **Clinical thresholds live in `config/`**, each marked "needs clinician review" (or pharmacist review).
+12. **Clinical thresholds live in `config/`**, each marked "needs clinician review" (or pharmacist / nutritionist review):
+    `glucose.ts`, `glucose-targets.ts`, `meal-signal.ts`, `checkups.ts`, `report-ranges.ts`, `interactions.ts`,
+    `allergy-groups.ts`, `medicine-test-links.ts`, `medicine-checks.ts`, `danger-signs.ts`, `portion.ts`,
+    `food-class-map.csv`.
 
 ## Project layout
 

@@ -14,6 +14,7 @@ import { routing } from '@/i18n/routing';
 import AppHeader from '@/components/AppHeader';
 import EmergencyButton from '@/components/EmergencyButton';
 import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
+import ReminderRunner from '@/components/ReminderRunner';
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -58,6 +59,7 @@ export default async function LocaleLayout({
           <main className="mx-auto max-w-md px-4 pt-4 pb-32">{children}</main>
           <EmergencyButton />
           <ServiceWorkerRegister />
+          <ReminderRunner />
         </NextIntlClientProvider>
       </body>
     </html>

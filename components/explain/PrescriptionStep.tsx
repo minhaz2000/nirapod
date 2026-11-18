@@ -68,7 +68,14 @@ export default function PrescriptionStep({ ai, demo, lines, setLines, diagnosis,
     setBitmap(await decodeImage(blob));
     setIsDemoImage(fromDemo);
     setNotice(null);
-    if (ai === false) applyFallback(fromDemo);
+    // If the photo arrives before the availability check finished, ask now instead of guessing.
+    const available =
+      ai ??
+      (await fetch('/api/handwriting')
+        .then((r) => r.json())
+        .then((j: { available: boolean }) => j.available)
+        .catch(() => false));
+    if (!available) applyFallback(fromDemo);
   }
 
   function applyFallback(fromDemo: boolean) {

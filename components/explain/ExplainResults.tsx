@@ -11,7 +11,11 @@ import { redact } from '@/lib/privacy/redact';
 import { checkPrescription, relateReportToPrescription, type ConfirmedMedicine, type HealthProfile } from '@/lib/rules/prescription';
 import type { CheckedValue } from '@/lib/rules/report-ranges';
 import { rangeText } from './ReportStep';
+import { planFromLine } from '@/lib/care/schedule';
+import { addPlan } from '@/lib/store/care';
+import { activePersonId } from '@/lib/store/diabetes';
 import type { RxLine } from './types';
+import Icon from '@/components/Icon';
 
 interface Props {
   values: CheckedValue[];
@@ -85,7 +89,8 @@ export default function ExplainResults({ values, lines, diagnosis, profile }: Pr
         <div data-testid="results-low-glucose" className="space-y-2">
           <Notice tone="danger">{t('report.lowGlucose')}</Notice>
           <Link href={emergencyHref({ selected: ['lowGlucose'] })} className="inline-flex min-h-11 items-center rounded-xl bg-red-700 px-4 font-bold text-white">
-            ☎ 999
+            <Icon name="phone" size={20} className="mr-2" />
+            999
           </Link>
         </div>
       )}
@@ -155,7 +160,42 @@ export default function ExplainResults({ values, lines, diagnosis, profile }: Pr
         )}
       </div>
 
+      {meds.length > 0 && <AddToReminders meds={meds} />}
+
       <Notice tone="warning">{t('results.disclaimer')}</Notice>
     </section>
+  );
+}
+
+/** Builds medicine reminders from the CONFIRMED prescription lines, exactly as written (Part 2 Full care). */
+function AddToReminders({ meds }: { meds: ConfirmedMedicine[] }) {
+  const t = useTranslations('diabetes.medicines');
+  const [added, setAdded] = useState<number | null>(null);
+  return (
+    <div className="space-y-2" data-testid="add-to-reminders">
+      <button
+        type="button"
+        disabled={added !== null}
+        onClick={async () => {
+          const personId = await activePersonId();
+          for (const m of meds) {
+            const plan = planFromLine({ brand: m.brand, generic: m.generic, strength: m.strength, frequency: m.frequency, duration: m.duration }, personId, 'prescription');
+            const { asNeeded: _a, recognised: _r, ...rest } = plan;
+            void _a;
+            void _r;
+            await addPlan(rest);
+          }
+          setAdded(meds.length);
+        }}
+        className="min-h-12 w-full rounded-xl border-2 border-teal-800 px-4 font-bold text-teal-900 disabled:opacity-60"
+      >
+        {t('addFromRx')}
+      </button>
+      {added !== null && (
+        <p role="status" className="text-green-800" data-testid="reminders-added">
+          {t('imported', { count: added })}
+        </p>
+      )}
+    </div>
   );
 }

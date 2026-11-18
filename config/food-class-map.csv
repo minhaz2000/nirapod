@@ -1,0 +1,20 @@
+# NEEDS NUTRITIONIST REVIEW: density_g_per_cm3 and typical_height_cm are estimates (checked only against typical serving sizes).
+# Maps each food_seg model class to the closest FoodNetBD item (Food_ID). match: exact = same dish; close = same food, different preparation; proxy = no such dish in FoodNetBD, nearest composition used.
+# typical_height_cm is the effective height of the food as seen from above (mound, slice or drink in a cup/glass).
+model_class,foodnetbd_id,foodnetbd_item,match,density_g_per_cm3,typical_height_cm,note
+chaa,23,Milk Tea (Doodh Cha),exact,1.03,5.0,drink in a cup; area of the cup top
+chola,391,Boiled Chola,close,0.75,2.0,chola bhuna has added oil; carbs per 100 g similar
+chop,473,Shingara (Vegetable Samosa),proxy,0.65,2.5,no aloo chop in FoodNetBD; fried potato snack used
+daal,393,Boiled Masur Dal,close,1.05,1.5,thicker than everyday liquid dal: carbs may be overestimated
+egg,104,Hen Egg (Boiled),exact,1.03,3.0,whole or halved boiled egg / egg curry
+fish,466,Hilsa Fish Curry (Ilish Bhuna),close,1.05,2.0,fish curry; other fish have near-zero carbs too
+mashed_potato,568,Potato Mash,exact,0.95,2.0,aloo bhorta
+matha,318,Buttermilk (Ghol),exact,1.03,6.0,drink in a glass; area of the glass top
+meat,461,Chicken Curry (Murgi Bhuna),close,1.05,2.5,beef curry (458) is similar in carbs
+puri,52,Luchi (Puri; Fried),exact,0.45,0.6,flat fried bread
+rice,36,Boiled Rice BR-28,exact,0.80,2.5,most common rice variety in Bangladesh; loosely piled cooked rice
+ruti,75,Roti (Ruti),exact,0.55,0.4,flat bread
+salad,533,Cucumber,close,0.60,1.5,cucumber / tomato / onion slices with gaps
+singara,473,Shingara (Vegetable Samosa),exact,0.60,3.0,
+vegetable,469,Mixed Vegetable Curry,exact,0.90,2.0,
+vegetable_roll,473,Shingara (Vegetable Samosa),proxy,0.60,3.0,no vegetable roll in FoodNetBD; fried pastry with vegetable filling used

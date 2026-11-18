@@ -12,7 +12,7 @@ does not allow redistribution. Licence column: fill in after checking.
 |---|---|---|---|
 | **Food images (in use: `food_seg.ipynb`)** | PUST Cafeteria Food Image Dataset, v2 (YOLO-seg ready) | https://data.mendeley.com/datasets/fn6yhzjz83/2 · DOI [10.17632/fn6yhzjz83.2](https://doi.org/10.17632/fn6yhzjz83.2) | **TODO: read the licence on the Mendeley page** (not reachable from the build environment) |
 | Food images | FoodBD (67 classes, polygons) | https://doi.org/10.17632/xh3ghf3jbg.2 | TODO: verify |
-| Food nutrition | FoodNetBD (in repo: `data/FoodNetBD A Bilingual, Disease-Annotated Nutrition.zip`, one CSV; not used yet) | https://data.mendeley.com/datasets/23f7yxnvy7/1 | CC BY 4.0 — attribution required |
+| Food nutrition | FoodNetBD (in repo: `data/raw/nutrition/FoodNetBD.csv`; used by the Diabetes Companion via `config/food-class-map.csv`) | https://data.mendeley.com/datasets/23f7yxnvy7/1 | CC BY 4.0 — attribution required |
 | Skin | SkinDiseaseBD | https://data.mendeley.com/datasets/9ggd3shdr7 | TODO: verify |
 | Skin | Benchmark Image Dataset for Scabies Detection | https://data.mendeley.com/datasets/6scrcbtzbx/1 · https://data.mendeley.com/datasets/mg6sb9b8x4/1 | TODO: verify |
 | Skin | SkinDisNet | https://data.mendeley.com/datasets/yj3md44hxg/2 | TODO: verify |

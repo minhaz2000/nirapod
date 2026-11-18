@@ -6,6 +6,7 @@ import { searchMedicines } from '@/lib/medicine/client';
 import { strengthKey } from '@/lib/medicine/normalise';
 import type { Product } from '@/lib/medicine/repo';
 import type { RxLine } from './types';
+import Icon from '@/components/Icon';
 
 interface Props {
   line: RxLine;
@@ -83,7 +84,8 @@ export default function RxLineEditor({ line, onChange, onRemove }: Props) {
       <li className="flex items-center justify-between gap-2 rounded-xl border-2 border-green-700 bg-green-50 p-3" data-testid="rx-line" data-confirmed="true">
         <span className="min-w-0">
           <span className="block font-semibold">
-            ✓ {line.product ? `${line.product.brand} ${line.product.strength}` : line.medicine} · {[line.frequency, line.duration].filter(Boolean).join(' · ')}
+            <Icon name="check" size={16} className="mr-1 align-[-3px] text-green-800" />
+            {line.product ? `${line.product.brand} ${line.product.strength}` : line.medicine} · {[line.frequency, line.duration].filter(Boolean).join(' · ')}
           </span>
           <span className="block text-sm text-slate-700">{line.product?.generic ?? t('noMatch')}</span>
         </span>

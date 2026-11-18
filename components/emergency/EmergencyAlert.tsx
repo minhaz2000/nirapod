@@ -7,6 +7,7 @@ import Call999Button from './Call999Button';
 import LocationActions from './LocationActions';
 import type { LocationApi } from './useLocation';
 import { useSignLabel } from './useSignLabel';
+import Icon from '@/components/Icon';
 
 interface Props {
   assessment: DangerAssessment;
@@ -43,7 +44,7 @@ export default function EmergencyAlert({ assessment, location, onClose }: Props)
     >
       <div className="mx-auto flex min-h-full max-w-md flex-col gap-4 px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
         <h2 id={titleId} ref={titleRef} tabIndex={-1} className="text-3xl leading-tight font-bold outline-none">
-          <span aria-hidden="true">⚠ </span>
+          <Icon name="alert" size={30} className="mr-2 align-[-4px]" />
           {t('alert.title')}
         </h2>
 

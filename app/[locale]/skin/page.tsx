@@ -5,6 +5,7 @@ import PageShell from '@/components/PageShell';
 import CameraCapture from '@/components/CameraCapture';
 import ModelStatus from '@/components/ModelStatus';
 import Notice from '@/components/Notice';
+import Icon from '@/components/Icon';
 
 export default function SkinPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = use(params);
@@ -12,7 +13,10 @@ export default function SkinPage({ params }: { params: Promise<{ locale: string 
   const t = useTranslations('skin');
   return (
     <PageShell title={t('title')}>
-      <Notice>🔒 {t('privacy')}</Notice>
+      <Notice>
+        <Icon name="lock" size={18} className="mr-2 align-[-3px]" />
+        {t('privacy')}
+      </Notice>
       <p>{t('intro')}</p>
       <CameraCapture livePreview />
       <ModelStatus name="skin_cls" />
