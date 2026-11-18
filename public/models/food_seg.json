@@ -1,0 +1,84 @@
+{
+  "name": "food_seg",
+  "version": "0.1.0",
+  "task": "instance-segmentation",
+  "architecture": "yolo11n-seg",
+  "framework": "ultralytics 8.4.215",
+  "classes": [
+    "chaa",
+    "chola",
+    "chop",
+    "daal",
+    "egg",
+    "fish",
+    "mashed_potato",
+    "matha",
+    "meat",
+    "puri",
+    "rice",
+    "ruti",
+    "salad",
+    "singara",
+    "vegetable",
+    "vegetable_roll"
+  ],
+  "inputSize": [
+    640,
+    640
+  ],
+  "inputName": "images",
+  "inputLayout": "NCHW",
+  "colorOrder": "RGB",
+  "preprocess": "letterbox to inputSize keeping aspect ratio, pad value 114, then pixel/255, then (x - mean) / std",
+  "letterboxPadValue": 114,
+  "mean": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "std": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "outputs": {
+    "output0": [
+      1,
+      52,
+      8400
+    ],
+    "output1": [
+      1,
+      32,
+      160,
+      160
+    ]
+  },
+  "outputFormat": "output0: [1, 4 + nClasses + 32, anchors] (cx, cy, w, h in input pixels; class scores; mask coefficients). output1: [1, 32, maskH, maskW] mask prototypes. No NMS in the graph — apply NMS in the app.",
+  "maskCoefficients": 32,
+  "nms": false,
+  "iouThreshold": 0.7,
+  "min_confidence": 0.614,
+  "min_confidence_source": "max mean mask F1 on test split (raw 0.614, clamped to 0.25–0.80)",
+  "metrics": {
+    "split": "test",
+    "images": 108,
+    "mask_map50": 0.8670785928268867,
+    "mask_map50_95": 0.7635431940543439,
+    "box_map50": 0.884323161229595,
+    "box_map50_95": 0.7713247812222506
+  },
+  "dataset": {
+    "name": "PUST Cafeteria Food Image Dataset",
+    "doi": "10.17632/fn6yhzjz83.2",
+    "url": "https://data.mendeley.com/datasets/fn6yhzjz83/2",
+    "images": {
+      "train": 1512,
+      "val": 108,
+      "test": 108
+    }
+  },
+  "trainedAt": "2026-11-18T11:34:19Z",
+  "trainHoursBudget": 1.25,
+  "smokeTest": false
+}
