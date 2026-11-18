@@ -19,7 +19,7 @@ export default function DiabetesPage({ params }: { params: Promise<{ locale: str
       <p>{t('intro')}</p>
       <Notice>{t('trial')}</Notice>
       <CameraCapture livePreview />
-      <ModelStatus name="food" />
+      <ModelStatus name="food_seg" />
       <p className="text-sm text-slate-700">{t('disclaimer')}</p>
     </PageShell>
   );

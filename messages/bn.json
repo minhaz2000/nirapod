@@ -130,7 +130,14 @@
   "model": {
     "notLoaded": "মডেল এখনো লোড হয়নি। মডেল যোগ হলে এই সুবিধা কাজ করবে।",
     "notSure": "নিশ্চিত নই — অনুগ্রহ করে ডাক্তার দেখান",
-    "confidence": "নিশ্চয়তা: {value}%"
+    "confidence": "নিশ্চয়তা: {value}%",
+    "checking": "মডেল যাচাই হচ্ছে…",
+    "downloadHint": "মডেলটি একবারই এই ফোনে নামানো হয়। এরপর ইন্টারনেট ছাড়াই কাজ করে।",
+    "download": "মডেল নামান ({size} MB)",
+    "downloadUnknown": "মডেল নামান",
+    "loading": "মডেল লোড হচ্ছে… {percent}% ({total} MB-এর মধ্যে {loaded} MB)",
+    "loadingBytes": "মডেল লোড হচ্ছে… {loaded} MB",
+    "ready": "মডেল প্রস্তুত (সংস্করণ {version}, {classes} ধরন)।"
   },
   "diabetes": {
     "title": "ডায়াবেটিস সঙ্গী",

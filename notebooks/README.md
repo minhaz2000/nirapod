@@ -12,7 +12,7 @@ does not allow redistribution. Licence column: fill in after checking.
 |---|---|---|---|
 | **Food images (in use: `food_seg.ipynb`)** | PUST Cafeteria Food Image Dataset, v2 (YOLO-seg ready) | https://data.mendeley.com/datasets/fn6yhzjz83/2 · DOI [10.17632/fn6yhzjz83.2](https://doi.org/10.17632/fn6yhzjz83.2) | **TODO: read the licence on the Mendeley page** (not reachable from the build environment) |
 | Food images | FoodBD (67 classes, polygons) | https://doi.org/10.17632/xh3ghf3jbg.2 | TODO: verify |
-| Food nutrition | FoodNetBD | https://data.mendeley.com/datasets/23f7yxnvy7/1 | CC BY 4.0 |
+| Food nutrition | FoodNetBD (in repo: `data/FoodNetBD A Bilingual, Disease-Annotated Nutrition.zip`, one CSV; not used yet) | https://data.mendeley.com/datasets/23f7yxnvy7/1 | CC BY 4.0 — attribution required |
 | Skin | SkinDiseaseBD | https://data.mendeley.com/datasets/9ggd3shdr7 | TODO: verify |
 | Skin | Benchmark Image Dataset for Scabies Detection | https://data.mendeley.com/datasets/6scrcbtzbx/1 · https://data.mendeley.com/datasets/mg6sb9b8x4/1 | TODO: verify |
 | Skin | SkinDisNet | https://data.mendeley.com/datasets/yj3md44hxg/2 | TODO: verify |
@@ -50,5 +50,7 @@ split SkinDisNet by patient.
   information. Nirapod uses the model only to recognise foods and shows a green/amber/red signal, not grams.
 - **Model:** Ultralytics YOLO11n-seg (AGPL-3.0 licensed code and weights; an Enterprise licence is needed to ship it
   in a closed-source product), fine-tuned for a fixed time budget on a Kaggle T4.
+- **Result (v0.1.0, trained 2026-11-18):** mask mAP50 0.867, mask mAP50-95 0.764, box mAP50 0.884 on 108 test images;
+  1,512 train / 108 val images; 16 classes; `min_confidence` 0.614 (max mean mask F1 on the test split).
 - **Outputs:** `food_seg.onnx` + `food_seg.json` → `public/models/`; `metrics.json`, `per_class_ap.csv`,
   `confusion_matrix*.png`, `sample_predictions.jpg` → keep as evidence for the submission.

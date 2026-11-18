@@ -15,7 +15,7 @@ export default function SkinPage({ params }: { params: Promise<{ locale: string 
       <Notice>🔒 {t('privacy')}</Notice>
       <p>{t('intro')}</p>
       <CameraCapture livePreview />
-      <ModelStatus name="skin" />
+      <ModelStatus name="skin_cls" />
       <p className="text-sm text-slate-700">{t('disclaimer')}</p>
     </PageShell>
   );
