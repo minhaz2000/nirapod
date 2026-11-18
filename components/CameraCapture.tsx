@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import Icon from '@/components/Icon';
 
 interface Props {
   label?: string;
@@ -50,9 +51,7 @@ export default function CameraCapture({ label, onCapture, livePreview = false, s
           big ? 'min-h-44 text-2xl' : 'min-h-16 text-lg'
         }`}
       >
-        <span aria-hidden="true" className={big ? 'text-6xl' : 'text-2xl'}>
-          📷
-        </span>
+        <Icon name="camera" size={big ? 56 : 28} />
         <span>{label ?? t('take')}</span>
         <input
           type="file"

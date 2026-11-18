@@ -12,6 +12,7 @@ import { checkPrescription, relateReportToPrescription, type ConfirmedMedicine, 
 import type { CheckedValue } from '@/lib/rules/report-ranges';
 import { rangeText } from './ReportStep';
 import type { RxLine } from './types';
+import Icon from '@/components/Icon';
 
 interface Props {
   values: CheckedValue[];
@@ -85,7 +86,8 @@ export default function ExplainResults({ values, lines, diagnosis, profile }: Pr
         <div data-testid="results-low-glucose" className="space-y-2">
           <Notice tone="danger">{t('report.lowGlucose')}</Notice>
           <Link href={emergencyHref({ selected: ['lowGlucose'] })} className="inline-flex min-h-11 items-center rounded-xl bg-red-700 px-4 font-bold text-white">
-            ☎ 999
+            <Icon name="phone" size={20} className="mr-2" />
+            999
           </Link>
         </div>
       )}

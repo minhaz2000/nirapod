@@ -1,5 +1,8 @@
 /**
- * Builds data/build/medicines.sqlite (read-only, used by the /api/medicines/* route handlers).
+ * Builds the read-only SQLite files used by the Node-runtime route handlers:
+ *   - data/build/medicines.sqlite  (/api/medicines/*, /api/explain) — see below
+ *   - data/build/nutrition.sqlite  (/api/food/nutrition) — FoodNetBD (CC BY 4.0) from data/raw/nutrition/FoodNetBD.csv
+ *     plus the model-class mapping in config/food-class-map.csv (density / height need nutritionist review)
  *
  * Inputs in data/raw/medicines/ (fetched automatically if missing — see scripts/fetch-data.ts):
  *   brands.csv              brand_id, generic_id, company_id, brand_name, form, strength, price, packsize
@@ -18,6 +21,7 @@ import { join } from 'node:path';
 import { bestUnitPrice, cleanText, formKey, nameKey, parsePacks, strengthKey } from '../lib/medicine/normalise';
 import { fetchMedicineData } from './fetch-data';
 import { MEDICINE_INDEXES, MEDICINE_SCHEMA } from '../lib/medicine/schema';
+import { NUTRITION_SCHEMA } from '../lib/nutrition/schema';
 import { MEDICINE_SOURCE } from './medicine-source';
 
 const RAW = MEDICINE_SOURCE.rawDir;
@@ -37,6 +41,78 @@ function readCsv(file: string): Row[] {
 }
 
 async function main() {
+  await buildMedicines();
+  buildNutrition();
+}
+
+const NUTRITION_CSV = 'data/raw/nutrition/FoodNetBD.csv';
+const FOOD_CLASS_MAP = 'config/food-class-map.csv';
+const NUTRITION_OUT = join(OUT_DIR, 'nutrition.sqlite');
+
+function num(v: string | undefined): number | null {
+  const n = Number(String(v ?? '').trim());
+  return String(v ?? '').trim() !== '' && Number.isFinite(n) ? n : null;
+}
+
+function buildNutrition() {
+  const foods = parse(readFileSync(NUTRITION_CSV), { columns: true, skip_empty_lines: true, bom: true }) as Row[];
+  const map = parse(readFileSync(FOOD_CLASS_MAP), { columns: true, skip_empty_lines: true, comment: '#', bom: true }) as Row[];
+
+  mkdirSync(OUT_DIR, { recursive: true });
+  if (existsSync(NUTRITION_OUT)) rmSync(NUTRITION_OUT);
+  const db = new Database(NUTRITION_OUT);
+  db.pragma('journal_mode = DELETE');
+  db.exec(NUTRITION_SCHEMA);
+  const insFood = db.prepare('INSERT INTO foods VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)');
+  const insMap = db.prepare('INSERT INTO food_class_map VALUES (?, ?, ?, ?, ?, ?)');
+  const ids = new Set<number>();
+  let skipped = 0;
+
+  db.transaction(() => {
+    for (const r of foods) {
+      const id = num(r.Food_ID);
+      const carbs = num(r['Carbohydrate (g)']);
+      if (id === null || carbs === null || ids.has(id)) {
+        skipped++;
+        continue;
+      }
+      ids.add(id);
+      insFood.run(
+        id,
+        cleanText(r['English Name']),
+        cleanText(r['Bengali Name']),
+        cleanText(r.Category) || null,
+        cleanText(r.Preparation) || null,
+        carbs,
+        num(r['Total_Sugars (g)']),
+        num(r['Fibre (g)']),
+        num(r['Energy (kcal)']),
+        num(r['Protein (g)']),
+        num(r['Fat (g)']),
+        num(r.Standard_Serving_Size_g),
+      );
+    }
+    for (const m of map) {
+      const foodId = num(m.foodnetbd_id);
+      const density = num(m.density_g_per_cm3);
+      const height = num(m.typical_height_cm);
+      if (foodId === null || !ids.has(foodId)) throw new Error(`food-class-map: ${m.model_class} → unknown FoodNetBD id ${m.foodnetbd_id}`);
+      if (!density || density <= 0 || !height || height <= 0) throw new Error(`food-class-map: ${m.model_class} needs density and height`);
+      if (!['exact', 'close', 'proxy'].includes(m.match ?? '')) throw new Error(`food-class-map: ${m.model_class} has match "${m.match}"`);
+      insMap.run(cleanText(m.model_class), foodId, m.match, density, height, cleanText(m.note) || null);
+    }
+    const meta = db.prepare('INSERT INTO meta VALUES (?, ?)');
+    meta.run('source_name', 'FoodNetBD: A Bilingual, Disease-Annotated Nutrition dataset');
+    meta.run('source_url', 'https://data.mendeley.com/datasets/23f7yxnvy7/1');
+    meta.run('licence', 'CC BY 4.0');
+    meta.run('built_at', new Date().toISOString());
+  })();
+  db.exec('ANALYZE; VACUUM');
+  db.close();
+  console.log(`build-data: wrote ${NUTRITION_OUT} (${ids.size} foods, ${map.length} model classes, ${skipped} rows skipped)`);
+}
+
+async function buildMedicines() {
   await fetchMedicineData();
 
   const brands = readCsv('brands.csv');

@@ -7,6 +7,7 @@ import { assessDangerSigns } from '@/lib/rules/danger-signs';
 import EmergencyAlert from './EmergencyAlert';
 import type { LocationApi } from './useLocation';
 import { useSignLabel } from './useSignLabel';
+import Icon from '@/components/Icon';
 
 interface Props {
   initial: readonly DangerSignId[];
@@ -57,7 +58,7 @@ export default function DangerChecklist({ initial, location }: Props) {
                     on ? 'border-red-700 bg-red-700 text-white' : 'border-slate-500'
                   }`}
                 >
-                  {on ? '✓' : ''}
+                  {on && <Icon name="check" size={18} />}
                 </span>
                 <span>
                   <span className="block text-lg font-semibold">{label(id)}</span>

@@ -6,7 +6,7 @@ import { deleteAllData, getSettings, updateSettings } from '@/lib/store/settings
 describe('on-device store', () => {
   it('saves settings and "Delete all my data" wipes everything', async () => {
     await updateSettings({ glucoseUnit: 'mgdl', demoMode: true });
-    await getDb().glucose.add({ takenAt: Date.now(), mmol: 6.1 });
+    await getDb().glucose.add({ personId: 'me', takenAt: Date.now(), mmol: 6.1, kind: 'random' });
     expect((await getSettings()).glucoseUnit).toBe('mgdl');
     expect(await getDb().glucose.count()).toBe(1);
 

@@ -9,7 +9,7 @@ One camera screen, four protections:
 |---|---|---|
 | **Emergency Support** | Tap-to-select danger signs (chest pain, FAST stroke signs, breathing, unconsciousness, bleeding, low blood sugar) → full-screen alert with one-tap 999, share location, nearby hospitals | ✅ built |
 | **Medicine Safety** | Scan a medicine pack (on-device OCR) → what it is, expiry, suspicious signs, cheaper same-generic brands. Explain a printed lab report and a prescription together: double doses, interactions, allergy / pregnancy flags, plain-language explanation | ✅ built |
-| **Diabetes Companion** | Plate photo → Bangladeshi food recognition → green / amber / red signal | 🟡 model trained and deployed (`public/models/food_seg.onnx`); feature not built yet |
+| **Diabetes Companion** | Plate photo → on-device food recognition (16 Bangladeshi foods) → portion check → green / amber / red signal, personalised from 2-hour glucose readings | ✅ core built (Full care in progress) |
 | **Private Skin Screening** | Skin photo → scabies likelihood with confidence, on the phone only | ⏳ model not trained yet (the page shows "model not loaded yet") |
 
 Built for the International AI Builders Congress 2026 (Idea to Unicorn track, HealthSphere AI). Project guide and
@@ -70,7 +70,7 @@ works: prescriptions are typed or picked from the medicine list, and explanation
 |---|---|---|---|
 | Medicine database (brands, generics, prices, pregnancy categories) | [WSAyan/medicinedb](https://github.com/WSAyan/medicinedb), commit `a3863e9` (last updated 2021-09; prices are approximate and old) | MIT © 2021 Wahid Sadique Ayan | No — fetched at build time (`data/raw/` is git-ignored) |
 | Food images for `food_seg` | PUST Cafeteria Food Image Dataset, Mendeley Data v2, DOI [10.17632/fn6yhzjz83.2](https://doi.org/10.17632/fn6yhzjz83.2) | **To confirm** on the Mendeley page | No — trained on Kaggle |
-| Food nutrition | FoodNetBD (bilingual, disease-annotated nutrition table) | CC BY 4.0 (attribution required) | Yes — `data/FoodNetBD …zip` (not used yet) |
+| Food nutrition | FoodNetBD (bilingual, disease-annotated nutrition table, 600 foods); mapping of the 16 model classes in `config/food-class-map.csv` | CC BY 4.0 (attribution shown in the app) | Yes — `data/raw/nutrition/FoodNetBD.csv` → `data/build/nutrition.sqlite` |
 | Food segmentation model `public/models/food_seg.onnx` | Ultralytics YOLO11n-seg fine-tuned in [`notebooks/food_seg.ipynb`](notebooks/food_seg.ipynb): mask mAP50 0.867, mAP50-95 0.764 on 108 test images, 16 classes | **AGPL-3.0** (Ultralytics code and weights); a closed-source product needs an Ultralytics Enterprise licence | Yes (11.7 MB) |
 | OCR language data (eng, ben) | `@tesseract.js-data`, tessdata 4.0.0_best_int | Apache-2.0 | No — copied from `node_modules` |
 | ONNX Runtime Web | `onnxruntime-web` | MIT | No — copied from `node_modules` |

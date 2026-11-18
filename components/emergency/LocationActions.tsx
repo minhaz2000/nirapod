@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { hospitalsSearchUrl, locationLink } from '@/lib/emergency/location';
 import type { LocationApi } from './useLocation';
+import Icon from '@/components/Icon';
 
 interface Props {
   location: LocationApi;
@@ -59,7 +60,7 @@ export default function LocationActions({ location, variant = 'page' }: Props) {
   return (
     <div className="space-y-3">
       <button type="button" onClick={onShare} data-testid={id('share-location')} className={`${btn} ${outline}`}>
-        <span aria-hidden="true">📍</span> {t('shareLocation')}
+        <Icon name="mapPin" size={22} /> {t('shareLocation')}
       </button>
 
       <div role="status" data-testid={id('location-status')} className={onAlert ? 'text-white' : 'text-slate-800'}>
@@ -99,7 +100,7 @@ export default function LocationActions({ location, variant = 'page' }: Props) {
         data-testid={id('nearby-hospitals')}
         className={`${btn} ${onAlert ? outline : 'border-slate-700 bg-white text-slate-900 hover:bg-slate-50'}`}
       >
-        <span aria-hidden="true">🏥</span> {t('nearbyHospitals')}
+        <Icon name="hospital" size={22} /> {t('nearbyHospitals')}
       </a>
       {!coords && <p className={`text-sm ${onAlert ? 'text-red-50' : 'text-slate-700'}`}>{t('nearbyHospitalsHint')}</p>}
     </div>

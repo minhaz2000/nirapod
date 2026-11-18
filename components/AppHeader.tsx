@@ -1,6 +1,7 @@
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import LanguageSwitch from './LanguageSwitch';
+import Icon from '@/components/Icon';
 
 export default function AppHeader() {
   const t = useTranslations();
@@ -17,7 +18,7 @@ export default function AppHeader() {
             aria-label={t('nav.settings')}
             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-2xl text-slate-800 hover:bg-slate-100"
           >
-            <span aria-hidden="true">⚙</span>
+            <Icon name="settings" size={24} />
           </Link>
           <LanguageSwitch />
         </div>

@@ -6,6 +6,7 @@ import CameraCapture from '@/components/CameraCapture';
 import Notice from '@/components/Notice';
 import { parseRangeText, parseReport } from '@/lib/ocr/report';
 import { checkReport, checkValue, type CheckedValue } from '@/lib/rules/report-ranges';
+import Icon from '@/components/Icon';
 
 interface Props {
   values: CheckedValue[];
@@ -136,7 +137,7 @@ export default function ReportStep({ values, onChange, demo }: Props) {
                       onClick={() => setEditing({ index: i, value: String(v.value), range: v.range?.text ?? '' })}
                       className="min-h-11 min-w-11 rounded-lg text-lg text-slate-600 hover:bg-slate-100"
                     >
-                      ✎
+                      <Icon name="pencil" size={20} />
                     </button>
                     <button
                       type="button"
@@ -144,7 +145,7 @@ export default function ReportStep({ values, onChange, demo }: Props) {
                       onClick={() => onChange(values.filter((_, j) => j !== i))}
                       className="min-h-11 min-w-11 rounded-lg text-xl text-slate-600 hover:bg-slate-100"
                     >
-                      ×
+                      <Icon name="close" size={20} />
                     </button>
                   </span>
                 </li>

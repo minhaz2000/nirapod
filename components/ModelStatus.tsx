@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useFormatter, useTranslations } from 'next-intl';
 import { fetchModelMeta, isModelCached, loadModel, modelSize, modelUrl, type LoadProgress, type ModelMeta } from '@/lib/ai/session';
 import Notice from './Notice';
+import Icon from '@/components/Icon';
 
 type State =
   | { k: 'checking' }
@@ -16,7 +17,7 @@ type State =
  * On-device model status. A model already on the phone loads by itself; otherwise the size is shown and the
  * download starts on tap (mobile data is expensive). A missing model shows "model not loaded yet"; never crashes.
  */
-export default function ModelStatus({ name }: { name: string }) {
+export default function ModelStatus({ name, onReady }: { name: string; onReady?: (meta: ModelMeta, session: unknown) => void }) {
   const t = useTranslations('model');
   const format = useFormatter();
   const [state, setState] = useState<State>({ k: 'checking' });
@@ -24,7 +25,10 @@ export default function ModelStatus({ name }: { name: string }) {
   async function load() {
     setState({ k: 'loading', progress: { loaded: 0, total: null } });
     const result = await loadModel(name, (progress) => setState({ k: 'loading', progress }));
-    setState(result.status === 'ready' ? { k: 'ready', meta: result.meta } : { k: 'missing' });
+    if (result.status === 'ready') {
+      setState({ k: 'ready', meta: result.meta });
+      onReady?.(result.meta, result.session);
+    } else setState({ k: 'missing' });
   }
 
   useEffect(() => {
@@ -84,7 +88,8 @@ export default function ModelStatus({ name }: { name: string }) {
   }
   return (
     <p className="text-sm text-green-800" data-testid="model-ready">
-      ✓ {t('ready', { version: state.meta.version, classes: state.meta.classes.length })}
+      <Icon name="check" size={16} className="mr-1 align-[-3px]" />
+      {t('ready', { version: state.meta.version, classes: state.meta.classes.length })}
     </p>
   );
 }

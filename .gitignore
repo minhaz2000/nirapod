@@ -21,6 +21,8 @@ coverage/
 data/raw/*
 !data/raw/.gitkeep
 !data/raw/README.md
+# FoodNetBD is CC BY 4.0 (redistribution allowed) and is needed by the Vercel build
+!data/raw/nutrition/
 data/build/*.sqlite
 data/build/*.db
 
