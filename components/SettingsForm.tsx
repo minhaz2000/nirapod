@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import LanguageSwitch from './LanguageSwitch';
+import ProfileForm from './ProfileForm';
 import { DEFAULT_SETTINGS, deleteAllData, getSettings, updateSettings } from '@/lib/store/settings';
 import type { Settings } from '@/lib/store/db';
 import type { GlucoseUnit } from '@/lib/rules/glucose';
@@ -85,6 +86,8 @@ export default function SettingsForm() {
           />
         </label>
       </section>
+
+      <ProfileForm key={deleted ? 'wiped' : 'profile'} />
 
       <section className={card}>
         <h2 className="text-lg font-bold">{t('dataTitle')}</h2>

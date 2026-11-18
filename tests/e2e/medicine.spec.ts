@@ -86,7 +86,7 @@ test('typed brand search works without a photo (Bangla)', async ({ page }) => {
 
 test('a poor photo gets a quality warning before OCR', async ({ page }) => {
   await page.goto('/en/medicine');
-  await page.locator('input[type=file]').setInputFiles('public/icons/icon-192.png');
+  await page.getByTestId('scan-pack').locator('input[type=file]').setInputFiles('public/icons/icon-192.png');
   await expect(page.getByTestId('quality-issues')).toContainText('too small');
   await page.getByRole('button', { name: 'Retake photo' }).click();
   await expect(page.getByTestId('scan-pack')).toHaveAttribute('data-step', 'idle');

@@ -7,6 +7,9 @@ export interface Profile {
   id: 'me';
   name?: string;
   createdAt: number;
+  /** Allergy names as typed by the user (ingredient, brand or group such as "penicillin"). */
+  allergies?: string[];
+  pregnant?: boolean;
 }
 
 export interface Meal {

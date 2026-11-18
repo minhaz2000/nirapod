@@ -12,6 +12,8 @@ export interface Product {
   generic: string | null;
   indication: string | null;
   drugClass: string | null;
+  /** Older FDA letter category from the database (e.g. "B", "D", "C+X"), or null. */
+  pregnancyCategory: string | null;
   manufacturer: string | null;
   form: string;
   strength: string;
@@ -34,6 +36,7 @@ interface ProductRow {
   generic: string | null;
   indication: string | null;
   drug_class: string | null;
+  pregnancy_category: string | null;
   manufacturer: string | null;
   form: string;
   strength: string;
@@ -49,7 +52,7 @@ interface ProductRow {
 const SELECT = `
   SELECT p.id, p.brand, p.brand_key, p.generic_key, p.form, p.form_key, p.strength, p.strength_key,
          p.manufacturer, p.unit_price, p.unit, p.packs_json,
-         g.name AS generic, g.indication, g.drug_class
+         g.name AS generic, g.indication, g.drug_class, g.pregnancy_category
   FROM products p LEFT JOIN generics g ON g.id = p.generic_id`;
 
 function toProduct(r: ProductRow): Product {
@@ -59,6 +62,7 @@ function toProduct(r: ProductRow): Product {
     generic: r.generic,
     indication: r.indication,
     drugClass: r.drug_class,
+    pregnancyCategory: r.pregnancy_category ?? null,
     manufacturer: r.manufacturer,
     form: r.form,
     strength: r.strength,

@@ -3,14 +3,15 @@ import { IMAGE_QUALITY } from '@/config/image-quality';
 import { assessQuality, type QualityReport } from '@/lib/ai/quality';
 import { estimateSkewAngle, stretchContrast, toGrayscale } from './image';
 
-const OCR_MAX_SIDE = 2000;
+const OCR_MAX_SIDE = 2400;
 
 export async function decodeImage(file: Blob): Promise<ImageBitmap> {
   return createImageBitmap(file, { imageOrientation: 'from-image' });
 }
 
-function drawScaled(bitmap: ImageBitmap, maxSide: number) {
-  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+function drawScaled(bitmap: ImageBitmap, maxSide: number, allowUpscale = false) {
+  // Small photos are enlarged (up to 2×) for OCR: tesseract loses decimal points in small text.
+  const scale = Math.min(allowUpscale ? 2 : 1, maxSide / Math.max(bitmap.width, bitmap.height));
   const w = Math.max(1, Math.round(bitmap.width * scale));
   const h = Math.max(1, Math.round(bitmap.height * scale));
   const canvas = document.createElement('canvas');
@@ -36,7 +37,7 @@ export function prepareForOcr(bitmap: ImageBitmap): { canvas: HTMLCanvasElement;
   const small = grayOf(bitmap, 600);
   const skewDegrees = estimateSkewAngle(small.gray, small.w, small.h);
 
-  const { canvas: src, w, h } = drawScaled(bitmap, OCR_MAX_SIDE);
+  const { canvas: src, w, h } = drawScaled(bitmap, OCR_MAX_SIDE, true);
   const a = (-skewDegrees * Math.PI) / 180;
   const cw = Math.ceil(Math.abs(w * Math.cos(a)) + Math.abs(h * Math.sin(a)));
   const ch = Math.ceil(Math.abs(w * Math.sin(a)) + Math.abs(h * Math.cos(a)));

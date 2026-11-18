@@ -52,11 +52,25 @@ async function main() {
   }
 
   const src = new Database(join(RAW, 'medicine.db'), { readonly: true, fileMustExist: true });
-  const generics = new Map(
-    (src.prepare('SELECT generic_id, generic_name, indication FROM generic').all() as Row[]).map((g) => [
-      g.generic_id!,
-      { name: cleanText(g.generic_name), indication: cleanText(g.indication).replace(/\s*\\n\s*/g, ' ') },
+  const pregnancyNames = new Map(
+    (src.prepare('SELECT pregnancy_id, pregnancy_name FROM pregnancy_category').all() as Row[]).map((r) => [
+      r.pregnancy_id!,
+      cleanText(r.pregnancy_name),
     ]),
+  );
+  const generics = new Map(
+    (src.prepare('SELECT generic_id, generic_name, indication, pregnancy_category_id FROM generic').all() as Row[]).map((g) => {
+      const preg = pregnancyNames.get(g.pregnancy_category_id ?? '') ?? '';
+      return [
+        g.generic_id!,
+        {
+          name: cleanText(g.generic_name),
+          indication: cleanText(g.indication).replace(/\s*\\n\s*/g, ' '),
+          // Older FDA letter categories (A, B, C, D, X, or combinations like "C+X"); "Not Classified" → null.
+          pregnancy: /^[ABCDX](\+[ABCDX])?$/.test(preg) ? preg : null,
+        },
+      ];
+    }),
   );
   src.close();
 
@@ -66,7 +80,7 @@ async function main() {
   db.pragma('journal_mode = DELETE');
   db.exec(MEDICINE_SCHEMA);
 
-  const insGeneric = db.prepare('INSERT INTO generics VALUES (?, ?, ?, ?, ?)');
+  const insGeneric = db.prepare('INSERT INTO generics VALUES (?, ?, ?, ?, ?, ?)');
   const insMaker = db.prepare('INSERT INTO manufacturers VALUES (?, ?, ?)');
   const insProduct = db.prepare(`INSERT INTO products VALUES (
     @id, @brand, @brand_key, @generic_id, @generic_key, @manufacturer_id, @manufacturer,
@@ -76,7 +90,7 @@ async function main() {
 
   db.transaction(() => {
     for (const [id, g] of generics) {
-      insGeneric.run(Number(id), g.name, nameKey(g.name), g.indication || null, classByGeneric.get(id)?.join('; ') ?? null);
+      insGeneric.run(Number(id), g.name, nameKey(g.name), g.indication || null, classByGeneric.get(id)?.join('; ') ?? null, g.pregnancy);
     }
     for (const [id, name] of companies) insMaker.run(Number(id), name, nameKey(name));
 
