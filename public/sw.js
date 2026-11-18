@@ -1,10 +1,12 @@
 /* Nirapod service worker — offline shell.
  * - Precaches the app shell (both locales + their static chunks) and an offline fallback page.
  * - Navigations: network first, fall back to cache, then the offline page.
- * - Static assets, on-device models and OCR files (/tesseract/): cache first, so OCR works offline after first use.
+ * - Static assets, model weights (/models/*.onnx?v=…), ONNX runtime (/ort/) and OCR files (/tesseract/): cache first,
+ *   so on-device features work offline after first use.
+ * - Model metadata (/models/*.json): network first, so a new model version is picked up when online.
  * - /api/*: never cached (nothing about the user is stored server-side or in the SW cache).
  */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const SHELL_CACHE = `nirapod-shell-${VERSION}`;
 const ASSET_CACHE = `nirapod-assets-${VERSION}`;
 const SHELL_PAGES = ['/bn', '/en', '/bn/emergency', '/en/emergency'];
@@ -78,8 +80,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  if (url.pathname.startsWith('/models/') && url.pathname.endsWith('.json')) {
+    event.respondWith(
+      (async () => {
+        const cache = await caches.open(ASSET_CACHE);
+        try {
+          const res = await fetch(req);
+          if (res.ok) cache.put(req, res.clone());
+          return res;
+        } catch {
+          return (await cache.match(req)) || Response.error();
+        }
+      })(),
+    );
+    return;
+  }
+
   if (
     url.pathname.startsWith('/_next/static/') ||
+    url.pathname.startsWith('/ort/') ||
     url.pathname.startsWith('/models/') ||
     url.pathname.startsWith('/icons/') ||
     url.pathname.startsWith('/tesseract/') ||
@@ -92,7 +111,7 @@ self.addEventListener('fetch', (event) => {
         const hit = await cache.match(req);
         if (hit) return hit;
         const res = await fetch(req);
-        if (res.ok) cache.put(req, res.clone());
+        if (res.ok && req.method === 'GET') cache.put(req, res.clone());
         return res;
       })(),
     );

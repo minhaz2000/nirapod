@@ -31,3 +31,5 @@ npm-debug.log*
 
 # OCR assets copied from node_modules on postinstall
 public/tesseract/
+# onnxruntime-web WASM copied from node_modules on postinstall
+public/ort/

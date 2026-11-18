@@ -130,7 +130,14 @@
   "model": {
     "notLoaded": "Model not loaded yet. This feature will work once the model is added.",
     "notSure": "Not sure — please see a doctor",
-    "confidence": "Confidence: {value}%"
+    "confidence": "Confidence: {value}%",
+    "checking": "Checking the model…",
+    "downloadHint": "The model is downloaded to this phone once. After that it works without internet.",
+    "download": "Download the model ({size} MB)",
+    "downloadUnknown": "Download the model",
+    "loading": "Loading the model… {percent}% ({loaded} of {total} MB)",
+    "loadingBytes": "Loading the model… {loaded} MB",
+    "ready": "Model ready (version {version}, {classes} types)."
   },
   "diabetes": {
     "title": "Diabetes Companion",

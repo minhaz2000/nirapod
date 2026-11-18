@@ -12,6 +12,7 @@ export default defineConfig([
     'next-env.d.ts',
     'public/sw.js',
     'public/tesseract/**',
+    'public/ort/**',
     'data/**',
     'playwright-report/**',
     'test-results/**',
