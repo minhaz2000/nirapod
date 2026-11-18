@@ -77,6 +77,7 @@ test('rule 7: nothing is checked until every line is confirmed', async ({ page }
 });
 
 test('demo: report + prescription → findings, relations and template explanation', async ({ page }) => {
+  test.slow(); // on-device OCR is CPU-heavy when tests run in parallel
   await settings(page, { demo: true, pregnant: true });
   await page.goto('/en/medicine');
 

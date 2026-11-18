@@ -6,7 +6,7 @@ import Icon from '@/components/Icon';
 export default function AppHeader() {
   const t = useTranslations();
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <header className="sticky top-0 z-40 print:hidden border-b border-slate-200 bg-white/95 backdrop-blur">
       <nav aria-label={t('nav.main')} className="mx-auto flex max-w-md items-center justify-between gap-2 px-4 py-2">
         <Link href="/" className="flex min-h-11 flex-col justify-center">
           <span className="text-xl font-bold leading-tight text-teal-900">{t('app.name')}</span>

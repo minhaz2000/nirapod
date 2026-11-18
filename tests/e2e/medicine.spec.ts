@@ -44,6 +44,7 @@ test.describe('API', () => {
 });
 
 test('scan a normal pack: OCR → confirm brand → no suspicious signs, cheaper brands', async ({ page }) => {
+  test.slow(); // on-device OCR is CPU-heavy when tests run in parallel
   await scanSample(page, 'demoOk');
   await expect(page.getByTestId('read-as')).toContainText('Napa');
   // The user must confirm; the brand, strength and form read on the pack are pre-selected.
@@ -61,6 +62,7 @@ test('scan a normal pack: OCR → confirm brand → no suspicious signs, cheaper
 });
 
 test('scan a pack with problems: lists each suspicious sign, never a verdict', async ({ page }) => {
+  test.slow(); // on-device OCR is CPU-heavy when tests run in parallel
   await scanSample(page, 'demoCheck');
   await page.getByTestId('confirm-product').click();
   const signs = page.getByTestId('result-signs');

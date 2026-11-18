@@ -6,7 +6,7 @@ import Icon from '@/components/Icon';
 export default function EmergencyButton() {
   const t = useTranslations('emergency');
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-red-800 bg-white/95 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+    <div className="fixed inset-x-0 bottom-0 z-50 print:hidden border-t border-red-800 bg-white/95 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
       <Link
         href="/emergency"
         aria-label={t('buttonLabel')}

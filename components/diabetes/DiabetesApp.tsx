@@ -6,7 +6,7 @@ import Icon, { type IconName } from '@/components/Icon';
 import Notice from '@/components/Notice';
 import { controlLevel } from '@/lib/rules/meal-signal';
 import type { GlucoseUnit } from '@/lib/rules/glucose';
-import { trialDaysLeft } from '@/lib/diabetes/trial';
+import { trialDaysLeft, trialEnded } from '@/lib/diabetes/trial';
 import type { DiabetesProfile, Meal } from '@/lib/store/db';
 import { activePersonId, getDiabetesProfile, pendingTwoHour } from '@/lib/store/diabetes';
 import { getSettings } from '@/lib/store/settings';
@@ -14,13 +14,23 @@ import GlucosePanel from './GlucosePanel';
 import MealCheck from './MealCheck';
 import Onboarding from './Onboarding';
 import Patterns from './Patterns';
+import CarePanel from './care/CarePanel';
+import GlucoseLog from './care/GlucoseLog';
+import MedicinesPanel from './care/MedicinesPanel';
+import MorePanel from './care/MorePanel';
+import PremiumScreen from './care/PremiumScreen';
 
-type Tab = 'meal' | 'glucose' | 'patterns';
+type Tab = 'meal' | 'glucose' | 'patterns' | 'medicines' | 'care' | 'more';
 const TABS: Array<{ id: Tab; icon: IconName }> = [
   { id: 'meal', icon: 'plate' },
   { id: 'glucose', icon: 'drop' },
   { id: 'patterns', icon: 'chart' },
+  { id: 'medicines', icon: 'pill' },
+  { id: 'care', icon: 'calendar' },
+  { id: 'more', icon: 'users' },
 ];
+/** Blood sugar entry and low-sugar help stay free after the trial (rule 11). */
+const FREE_TABS: readonly Tab[] = ['glucose'];
 
 /** Diabetes Companion: onboarding once, then meals, sugar readings and personal patterns. All data on the phone. */
 export default function DiabetesApp() {
@@ -48,6 +58,14 @@ export default function DiabetesApp() {
     })().catch(() => setProfile(null));
   }, []);
 
+  async function switchPerson(id: string) {
+    setProfile(undefined);
+    setPersonId(id);
+    setTab('meal');
+    setDue([]);
+    setProfile((await getDiabetesProfile(id)) ?? null);
+  }
+
   useEffect(() => {
     if (!personId || !profile) return;
     let alive = true;
@@ -66,6 +84,7 @@ export default function DiabetesApp() {
   if (profile === null) {
     return (
       <Onboarding
+        key={personId}
         personId={personId}
         unit={unit}
         onUnit={setUnit}
@@ -80,6 +99,7 @@ export default function DiabetesApp() {
 
   const level = controlLevel({ fastingMmol: profile.fastingMmol, hba1c: profile.hba1c });
   const days = trialDaysLeft(trialStart);
+  const locked = trialEnded(trialStart) && !FREE_TABS.includes(tab);
   return (
     <div className="space-y-4" data-testid="diabetes-app">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -114,7 +134,7 @@ export default function DiabetesApp() {
         </div>
       ))}
 
-      <nav className="grid grid-cols-3 gap-1 rounded-2xl bg-white p-1 shadow-sm" role="tablist">
+      <nav className="grid grid-cols-3 gap-1 rounded-2xl bg-white p-1 shadow-sm" role="tablist" aria-label={t('title')}>
         {TABS.map((x) => (
           <button
             key={x.id}
@@ -131,20 +151,27 @@ export default function DiabetesApp() {
         ))}
       </nav>
 
-      {tab === 'meal' && <MealCheck personId={personId} profile={profile} demo={demo} onSaved={bump} />}
+      {locked && <PremiumScreen ended />}
+      {!locked && tab === 'meal' && <MealCheck personId={personId} profile={profile} demo={demo} onSaved={bump} />}
       {tab === 'glucose' && (
-        <GlucosePanel
-          personId={personId}
-          unit={unit}
-          forMeal={forMeal}
-          refresh={refresh}
-          onSaved={() => {
-            setForMeal(null);
-            bump();
-          }}
-        />
+        <>
+          <GlucosePanel
+            personId={personId}
+            unit={unit}
+            forMeal={forMeal}
+            refresh={refresh}
+            onSaved={() => {
+              setForMeal(null);
+              bump();
+            }}
+          />
+          {!trialEnded(trialStart) && <GlucoseLog personId={personId} unit={unit} refresh={refresh} />}
+        </>
       )}
-      {tab === 'patterns' && <Patterns personId={personId} unit={unit} fasting={profile.fastingMmol} refresh={refresh} />}
+      {!locked && tab === 'patterns' && <Patterns personId={personId} unit={unit} fasting={profile.fastingMmol} refresh={refresh} />}
+      {!locked && tab === 'medicines' && <MedicinesPanel personId={personId} refresh={refresh} onChange={bump} />}
+      {!locked && tab === 'care' && <CarePanel personId={personId} />}
+      {!locked && tab === 'more' && <MorePanel personId={personId} unit={unit} onPerson={switchPerson} />}
 
       <p className="text-xs text-slate-600">{t('credit')}</p>
     </div>
