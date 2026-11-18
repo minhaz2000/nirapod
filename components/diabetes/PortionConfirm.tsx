@@ -24,6 +24,11 @@ interface Props {
   onConfirm: () => void;
 }
 
+/** Foods the model most often misses, offered as one-tap additions (medium portion, adjustable after). */
+const QUICK_ADD = ['rice', 'daal', 'ruti'] as const;
+/** Main starches of a Bangladeshi plate: if none is on the list, the app asks whether it missed one. */
+const STAPLES = ['rice', 'ruti', 'puri'] as const;
+
 let n = 0;
 const newId = () => `added-${Date.now().toString(36)}-${++n}`;
 
@@ -49,7 +54,27 @@ export default function PortionConfirm({ portions, onChange, nutrition, classes,
             <div className="flex items-center gap-2">
               <span aria-hidden="true" className="size-4 shrink-0 rounded-full" style={{ background: colourFor(p.classIndex) }} />
               {p.named ? (
-                <span className="font-bold">{food(p.modelClass)}</span>
+                <label className="flex-1">
+                  <span className="sr-only">{t('change')}</span>
+                  {/* The model can be confidently wrong (e.g. dal named "vegetable"): one tap fixes the name, the area is kept. */}
+                  <select
+                    value={p.modelClass}
+                    data-testid="portion-change"
+                    aria-label={t('change')}
+                    onChange={(e) => {
+                      const cls = e.target.value;
+                      if (!nutrition[cls]) return;
+                      update(p.id, (x) => ({ ...relabelPortion(x, cls, nutrition[cls]!), named: true, classIndex: classes.indexOf(cls), source: x.source }));
+                    }}
+                    className="min-h-11 w-full rounded-lg border-2 border-transparent bg-transparent px-1 font-bold hover:border-slate-300"
+                  >
+                    {classes.map((c) => (
+                      <option key={c} value={c}>
+                        {food(c)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
               ) : (
                 <label className="flex-1">
                   <span className="block text-sm font-semibold text-amber-900">{t('notSure')}</span>
@@ -101,8 +126,32 @@ export default function PortionConfirm({ portions, onChange, nutrition, classes,
         ))}
       </ul>
 
+      {!portions.some((p) => p.named && (STAPLES as readonly string[]).includes(p.modelClass)) && (
+        <p className="flex items-start gap-2 rounded-xl bg-amber-50 p-3 text-amber-950" data-testid="staple-hint">
+          <Icon name="info" size={20} className="mt-0.5" />
+          {t('stapleHint')}
+        </p>
+      )}
       <div className="space-y-2 rounded-xl border-2 border-dashed border-teal-700 p-3" data-testid="add-missed">
         <p className="font-semibold">{t('addMissed')}</p>
+        {/* Rice is the model's weakest class (recall 0.65): the most often missed foods are one tap away. */}
+        <div className="flex flex-wrap items-center gap-2" data-testid="quick-add">
+          <span className="text-sm text-slate-700">{t('quickAdd')}</span>
+          {QUICK_ADD.filter((c) => nutrition[c]).map((c) => (
+            <button
+              key={c}
+              type="button"
+              data-testid={`quick-add-${c}`}
+              onClick={() =>
+                onChange([...portions, { ...addedFood(newId(), c, 'medium', plateDiameterCm, nutrition[c]!), named: true, classIndex: classes.indexOf(c) }])
+              }
+              className="inline-flex min-h-11 items-center gap-1 rounded-full border-2 border-teal-800 px-3 text-sm font-semibold text-teal-900"
+            >
+              <Icon name="plus" size={16} />
+              {food(c)}
+            </button>
+          ))}
+        </div>
         <select value={addClass} onChange={(e) => setAddClass(e.target.value)} aria-label={t('food')} data-testid="add-food-class" className="min-h-11 w-full rounded-lg border-2 border-slate-300 px-2">
           <option value="">{t('choose')}</option>
           {classes.map((c) => (

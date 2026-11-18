@@ -52,5 +52,12 @@ split SkinDisNet by patient.
   in a closed-source product), fine-tuned for a fixed time budget on a Kaggle T4.
 - **Result (v0.1.0, trained 2026-11-18):** mask mAP50 0.867, mask mAP50-95 0.764, box mAP50 0.884 on 108 test images;
   1,512 train / 108 val images; 16 classes; `min_confidence` 0.614 (max mean mask F1 on the test split).
+- **Real-photo check (2026-11-18, two top-down home photos, `public/samples/plate-1.jpg` and `plate-2.jpg`):**
+  the app's TypeScript pipeline matches Ultralytics on the same model (boxes identical, scores ±0.01, mask area ±2 %),
+  but the model **missed rice on both plates** (plate 1: only a 0.26 "not sure"; plate 2: nothing), **labelled dal as
+  "vegetable" (0.87)**, did not find a milk drink, and merged prawn curry and greens into a weak "chola". Uncorrected,
+  plate 1 would read 30 g carbs / green instead of ~83 g / red after one-tap corrections. Likely cause: the PUST photos
+  are cafeteria steel trays, these are styled home plates. Next training run: add home-style plates with rice and dal
+  in bowls (and drinks), then re-check with `tests/unit/food-seg-real.test.ts` and `tests/e2e/plates.spec.ts`.
 - **Outputs:** `food_seg.onnx` + `food_seg.json` → `public/models/`; `metrics.json`, `per_class_ap.csv`,
   `confusion_matrix*.png`, `sample_predictions.jpg` → keep as evidence for the submission.
