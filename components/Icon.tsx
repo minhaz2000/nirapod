@@ -3,7 +3,7 @@
  * with currentColor so they follow text colour. Decorative by default (aria-hidden); pass `label` to make one
  * meaningful to screen readers.
  */
-const PATHS = {
+export const ICON_PATHS = {
   phone: 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z',
   camera: 'M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z M12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z',
   settings:
@@ -36,7 +36,7 @@ const PATHS = {
   info: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 11v6 M12 7.5h.01',
 } as const;
 
-export type IconName = keyof typeof PATHS;
+export type IconName = keyof typeof ICON_PATHS;
 
 export default function Icon({ name, size = 20, className = '', label }: { name: IconName; size?: number; className?: string; label?: string }) {
   return (
@@ -55,7 +55,7 @@ export default function Icon({ name, size = 20, className = '', label }: { name:
       aria-label={label}
       focusable="false"
     >
-      <path d={PATHS[name]} />
+      <path d={ICON_PATHS[name]} />
     </svg>
   );
 }

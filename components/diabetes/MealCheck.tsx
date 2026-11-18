@@ -180,7 +180,19 @@ export default function MealCheck({ personId, profile, demo, onSaved }: Props) {
       )}
 
       {(step.k === 'confirm' || step.k === 'result') && analysis && (
-        <canvas ref={canvasRef} data-testid="meal-canvas" className="w-full rounded-2xl shadow-sm" aria-label={portions.map((p) => (p.named ? food(p.modelClass) : t('notSure'))).join(', ')} />
+        <canvas
+          ref={canvasRef}
+          data-testid="meal-canvas"
+          className="w-full rounded-2xl shadow-sm"
+          aria-label={portions.map((p) => (p.named ? food(p.modelClass) : t('notSure'))).join(', ')}
+          // Machine-readable result for tests and demos: label, score, share of the photo, box in photo pixels.
+          data-analysis={JSON.stringify({
+            ms: analysis.ms,
+            srcW: analysis.srcW,
+            srcH: analysis.srcH,
+            detections: analysis.detections.map((d) => ({ label: d.label, score: Math.round(d.score * 1000) / 1000, area: Math.round(d.areaFraction * 10_000) / 10_000, box: d.box.map(Math.round) })),
+          })}
+        />
       )}
 
       {step.k === 'confirm' && (

@@ -225,7 +225,10 @@
       "add": "Add",
       "total": "Total: about {carbs} g carbs",
       "confirm": "This is my meal",
-      "empty": "No foods yet."
+      "empty": "No foods yet.",
+      "change": "Change food",
+      "quickAdd": "Often missed:",
+      "stapleHint": "No rice, ruti or puri found. If your plate has some, add it below — the app can miss rice."
     },
     "signal": {
       "green": "Green — a good balance for you",
@@ -703,7 +706,61 @@
     "privacy": "Your data stays on your phone. Skin photos never leave the device.",
     "consultation": "Online doctor consultation",
     "comingSoon": "Coming soon (Premium)",
-    "version": "Version {version}"
+    "version": "Version {version}",
+    "ai": {
+      "title": "How Nirapod's AI works",
+      "intro": "Each answer passes through these steps. Photos are checked on your phone, and every fact comes from verified data and fixed safety rules.",
+      "diagram": "Diagram: photo or text, then AI on the phone, then verified data and safety rules, then a language model that only rephrases verified facts, then your signal or explanation.",
+      "steps": {
+        "input": {
+          "title": "Photo or text",
+          "line1": "plate, skin, medicine pack,",
+          "line2": "report or prescription"
+        },
+        "device": {
+          "title": "AI on your phone",
+          "line1": "food segmentation · skin screening",
+          "line2": "printed-text OCR · works offline"
+        },
+        "verified": {
+          "title": "Verified data + safety rules",
+          "line1": "medicine database · nutrition table",
+          "line2": "fixed rules for medicines and sugar"
+        },
+        "llm": {
+          "title": "Language model (optional)",
+          "line1": "only rephrases verified facts",
+          "line2": "checked before it is shown"
+        },
+        "result": {
+          "title": "Your signal or explanation",
+          "line1": "green / amber / red, or plain words",
+          "line2": "in Bangla or English"
+        }
+      },
+      "modelsTitle": "Our models",
+      "models": {
+        "food": "Food model: YOLO11n-seg, recognises {classes, number} Bangladeshi foods.",
+        "accuracy": "Mask mAP50 {map, number} on the PUST test split (prototype accuracy). Rice is still the hardest food, so the app always asks you to check the plate.",
+        "speed": "Runs on the phone in about {seconds, number} seconds; photos are not uploaded.",
+        "medicines": "Medicine database of {products, number} products, used for checks and cheaper same-medicine brands.",
+        "learning": "Personal learning: after your 2-hour sugar readings, the meal signal adapts to you.",
+        "skin": "Skin screening model: in preparation."
+      },
+      "scaleTitle": "Built for Bangladesh, designed to scale",
+      "scale": {
+        "bangla": "Bangla first: every screen in Bangla and English, Bangla by default.",
+        "phones": "Works on low-cost phones and without internet for on-device checks.",
+        "retrain": "The same design can be retrained with another country's foods, medicines and language: swap the model, the nutrition table, the medicine list and the language file."
+      },
+      "safetyTitle": "Safety",
+      "safety": {
+        "guide": "Guides, never diagnoses: we say “may” and “possible”, and show how sure the AI is.",
+        "medicine": "Never changes your medicine: no advice to stop, start or change a medicine or insulin dose.",
+        "photos": "Photos stay on your phone: skin photos are never uploaded, and the top of a prescription (name, phone) is cut off before reading.",
+        "emergency": "Emergency help is always free and one tap away."
+      }
+    }
   },
   "common": {
     "comingSoon": "Coming soon"
