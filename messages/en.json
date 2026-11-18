@@ -745,7 +745,7 @@
         "speed": "Runs on the phone in about {seconds, number} seconds; photos are not uploaded.",
         "medicines": "Medicine database of {products, number} products, used for checks and cheaper same-medicine brands.",
         "learning": "Personal learning: after your 2-hour sugar readings, the meal signal adapts to you.",
-        "skin": "Skin screening model: in preparation."
+        "skin": "Skin screening model: coming in the next phase."
       },
       "scaleTitle": "Built for Bangladesh, designed to scale",
       "scale": {
