@@ -104,8 +104,8 @@ describe('repo (fixture database)', () => {
     db.exec(MEDICINE_INDEXES);
     db.prepare('INSERT INTO meta VALUES (?, ?)').run('data_last_updated', '2021-09');
     db.prepare('INSERT INTO meta VALUES (?, ?)').run('source_name', 'medicinedb (WSAyan)');
-    db.prepare('INSERT INTO generics VALUES (?, ?, ?, ?, ?)').run(1, 'Paracetamol', 'paracetamol', 'Mild to moderate pain and fever', 'Non-opioid analgesics');
-    db.prepare('INSERT INTO generics VALUES (?, ?, ?, ?, ?)').run(2, 'Omeprazole', 'omeprazole', 'Peptic ulcer', 'Proton pump inhibitor');
+    db.prepare('INSERT INTO generics VALUES (?, ?, ?, ?, ?, ?)').run(1, 'Paracetamol', 'paracetamol', 'Mild to moderate pain and fever', 'Non-opioid analgesics', 'B');
+    db.prepare('INSERT INTO generics VALUES (?, ?, ?, ?, ?, ?)').run(2, 'Omeprazole', 'omeprazole', 'Peptic ulcer', 'Proton pump inhibitor', 'C');
     const ins = db.prepare('INSERT INTO products VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)');
     const add = (id: number, brand: string, g: number, gk: string, maker: string, form: string, strength: string, price: number | null, unit: string | null) =>
       ins.run(id, brand, nameKey(brand), g, gk, null, maker, form, formKey(form), strength, strengthKey(strength), price, unit, '[]');
@@ -125,7 +125,7 @@ describe('repo (fixture database)', () => {
     const r = searchBrands(db, 'Nopa');
     expect(r[0]!.brand).toBe('Napa');
     const tab = r[0]!.products.find((p) => p.form === 'Tablet' && p.strength === '500mg')!;
-    expect(tab).toMatchObject({ generic: 'Paracetamol', indication: 'Mild to moderate pain and fever', unitPrice: 0.8 });
+    expect(tab).toMatchObject({ generic: 'Paracetamol', indication: 'Mild to moderate pain and fever', unitPrice: 0.8, pregnancyCategory: 'B' });
   });
 
   it('safety rule 10: alternatives match generic AND strength AND form exactly, cheapest first', () => {

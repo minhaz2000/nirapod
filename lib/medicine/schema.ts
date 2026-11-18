@@ -3,7 +3,8 @@ export const MEDICINE_SCHEMA = `
   CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
   CREATE TABLE generics (
     id INTEGER PRIMARY KEY, name TEXT NOT NULL, name_key TEXT NOT NULL,
-    indication TEXT, drug_class TEXT
+    indication TEXT, drug_class TEXT,
+    pregnancy_category TEXT
   );
   CREATE TABLE manufacturers (id INTEGER PRIMARY KEY, name TEXT NOT NULL, name_key TEXT NOT NULL);
   CREATE TABLE products (

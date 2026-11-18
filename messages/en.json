@@ -238,6 +238,127 @@
         "dataMissing": "The medicine database is not available yet.",
         "generic": "Something went wrong. Please try again."
       }
+    },
+    "explain": {
+      "title": "Understand a report and prescription",
+      "intro": "Add a printed test report, a prescription, or both. Nirapod checks them and explains what they show in plain language.",
+      "aiOn": "Handwriting reading is available.",
+      "aiOff": "Handwriting reading is not set up on this app yet. You can type or pick the medicines from the medicine list instead. Explanations use a standard template.",
+      "demoTitle": "Demo samples",
+      "demoReport": "Sample report",
+      "demoPrescription": "Sample prescription",
+      "report": {
+        "title": "1. Test report (printed)",
+        "add": "Photograph the report",
+        "reading": "Reading the report on this phone… {percent}%",
+        "found": "Values found — please check them against the report",
+        "noneFound": "No test values found. Try a clearer, flat photo of the results table.",
+        "test": "Test",
+        "value": "Result",
+        "range": "Range",
+        "high": "Above range",
+        "low": "Below range",
+        "normal": "In range",
+        "unknown": "No range",
+        "fallback": "usual range",
+        "remove": "Remove",
+        "lowGlucose": "A blood sugar value is below 3.9 mmol/L (70 mg/dL). If the person feels unwell, shaky or confused, give something sweet now and call 999 if needed.",
+        "repaired": "range read as {range} — please check it against the report",
+        "suspect": "Range unclear — please check it against the report",
+        "edit": "Edit",
+        "save": "Save",
+        "rangeInput": "Range (e.g. 3.9 - 5.6)"
+      },
+      "rx": {
+        "title": "2. Prescription",
+        "add": "Photograph the prescription",
+        "cropTitle": "Hide personal details",
+        "cropHint": "The top part (patient name, phone, address) is cut off before anything is sent. Move the slider until the top part is hidden.",
+        "cropSlider": "Part to cut off from the top: {percent}%",
+        "preview": "Only this part will be sent:",
+        "send": "Read the handwriting",
+        "sending": "Reading the handwriting…",
+        "privacy": "Only the cut photo is sent, and nothing is stored on the server.",
+        "notAvailable": "Reading handwriting is not available right now (no AI key is set up). Please type or pick each medicine below.",
+        "failed": "Could not read the handwriting. Please type or pick each medicine below.",
+        "demoLines": "Demo: sample lines for this prescription (not read by AI). Check each one as you would a real reading.",
+        "readByAi": "Read by AI from the photo. Check every line against the prescription.",
+        "linesTitle": "Medicines on the prescription",
+        "noLines": "No medicines yet.",
+        "addLine": "Add a medicine",
+        "medicine": "Medicine",
+        "strength": "Strength",
+        "frequency": "How often",
+        "duration": "How long",
+        "diagnosis": "Diagnosis written by the doctor (if any)",
+        "confidence": "Reading confidence: {value}%",
+        "unclear": "Unclear — please check carefully",
+        "match": "Medicine in the database",
+        "matchSearch": "Search the medicine list",
+        "noMatch": "Not found in the medicine list. It will not be checked.",
+        "pick": "Choose",
+        "confirm": "Confirm this line",
+        "confirmed": "Confirmed",
+        "edit": "Edit",
+        "remove": "Remove",
+        "mustConfirm": "{count, plural, one {Confirm or remove # more line to continue.} other {Confirm or remove # more lines to continue.}}"
+      },
+      "results": {
+        "check": "Check and explain",
+        "title": "3. What this means",
+        "diagnosisTitle": "Doctor's diagnosis",
+        "diagnosisNote": "Written by your doctor. It comes before any general information below.",
+        "findingsTitle": "Things to check with your doctor or pharmacist",
+        "noFindings": "Our checks found nothing to point out.",
+        "checksNote": "Our checks use a short list only. No warning does not mean the medicines are safe together.",
+        "profileNote": "Allergy and pregnancy checks use the health profile in Settings.",
+        "relationsTitle": "Report and prescription together",
+        "explanationTitle": "Explanation",
+        "writing": "Writing the explanation…",
+        "sourceAi": "Written by AI only from the checked results above; it is not allowed to add medical facts.",
+        "sourceTemplate": "Standard explanation (AI was not used).",
+        "sourceFallback": "Standard explanation (the AI text did not pass our safety check, so it was not shown).",
+        "disclaimer": "This explains your papers; it is not a diagnosis. Do not stop or change any medicine on your own.",
+        "startOver": "Start again"
+      },
+      "findings": {
+        "duplicateIngredient": "{brands} all contain {ingredient}. Taking them together may mean a double dose. Ask your doctor or pharmacist; do not stop on your own.",
+        "allergy": "{brand} may not suit you: your profile lists an allergy to “{allergy}”. Ask your doctor or pharmacist; do not stop on your own.",
+        "pregnancy": "{brand} has pregnancy category {category} in the medicine database, which means it may not be suitable in pregnancy. Ask your doctor; do not stop on your own.",
+        "notInDatabase": "{brand} was not found in the medicine list, so it was not checked.",
+        "interaction": "{a} and {b}: {text} Ask your doctor or pharmacist; do not stop on your own."
+      },
+      "interactions": {
+        "anticoagulantNsaid": "taken together, these may raise the risk of bleeding.",
+        "twoNsaids": "two pain medicines of the same kind (NSAIDs) together may raise the risk of stomach and kidney problems.",
+        "clopidogrelPpi": "the stomach medicine may make the blood-thinning medicine work less well.",
+        "pde5Nitrate": "together these may cause a dangerous drop in blood pressure.",
+        "methotrexateCotrimoxazole": "together these may cause serious side effects.",
+        "statinMacrolide": "together these may raise the risk of muscle problems.",
+        "potassiumRaising": "together these may raise potassium in the blood.",
+        "tramadolSsri": "together these may cause a rare but serious reaction (serotonin syndrome).",
+        "quinoloneMinerals": "the minerals may make the antibiotic work less well if taken at the same time. Ask your pharmacist about timing."
+      },
+      "severity": {
+        "avoid": "Important",
+        "caution": "Check"
+      },
+      "relations": {
+        "related": "{brands} is commonly used when {test} is {status, select, high {high} other {low}}.",
+        "doesNotFit": "{test} is {status, select, high {high} other {low}}, and {brands} usually {effect, select, lowers {lowers} raises {raises} other {affects}} it. This does not fit. Ask your doctor; do not stop on your own.",
+        "noLinkedMedicine": "{test} is {status, select, high {high} other {low}}, and no medicine on this prescription is commonly linked to it. Ask your doctor; do not stop on your own."
+      },
+      "template": {
+        "diagnosis": "Your doctor wrote this diagnosis: {diagnosis}. It comes before the general information below.",
+        "lowGlucose": "A blood sugar value is below the safe level. If the person feels unwell, give something sweet now and call 999 if needed.",
+        "valueOut": "{test} is {value} {unit}, which is {status, select, high {above} other {below}} the {source, select, fallback {usual} other {printed}} range ({range}).",
+        "valuesNormal": "The other values found are within their ranges.",
+        "noReportIssues": "All values found on the report are within their ranges.",
+        "medicine": "{brand} contains {generic}.",
+        "medicineUnknown": "{brand} was not found in the medicine list.",
+        "closing": "This is general information from your papers, not a diagnosis. Ask your doctor or pharmacist about anything that worries you, and do not stop or change any medicine on your own.",
+        "valueFlag": "{test} is {value} {unit}, marked {status, select, high {high} other {low}} on the report."
+      }
     }
   },
   "settings": {
@@ -254,7 +375,16 @@
     "dataHint": "All your data is stored only on this phone.",
     "deleteAll": "Delete all my data",
     "deleteConfirm": "Delete all your data from this phone? This cannot be undone.",
-    "deleteDone": "All your data has been deleted."
+    "deleteDone": "All your data has been deleted.",
+    "profile": {
+      "title": "Health profile (for medicine checks)",
+      "hint": "Stored only on this phone. Used to flag allergies and pregnancy when checking a prescription.",
+      "allergies": "Allergies",
+      "allergiesHint": "Separate with commas, e.g. penicillin, sulfa, Napa",
+      "pregnant": "I am pregnant",
+      "save": "Save profile",
+      "saved": "Saved"
+    }
   },
   "about": {
     "title": "About Nirapod",

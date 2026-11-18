@@ -44,12 +44,21 @@ function getWorker(onProgress?: (p: number) => void): Promise<Worker> {
 
 const onProgressRef: { current?: (p: number) => void } = {};
 
+/**
+ * 'sparse' (default) finds scattered text such as a medicine pack; 'table' keeps whole rows together, which a lab
+ * report needs ("Test  Result  Unit  Range" on one line).
+ */
+export type OcrLayout = 'sparse' | 'table';
+
 export async function recognisePrinted(
   image: HTMLCanvasElement | Blob | string,
   onProgress?: (progress: number) => void,
+  layout: OcrLayout = 'sparse',
 ): Promise<OcrResult> {
   const worker = await getWorker(onProgress);
   onProgressRef.current = onProgress;
+  const { PSM } = await import('tesseract.js');
+  await worker.setParameters({ tessedit_pageseg_mode: layout === 'table' ? PSM.SINGLE_BLOCK : PSM.SPARSE_TEXT });
   const { data } = await worker.recognize(image, {}, { text: true, blocks: true });
   const words: OcrWord[] = [];
   for (const block of data.blocks ?? []) {

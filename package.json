@@ -2,7 +2,7 @@
   "name": "nirapod",
   "version": "0.1.0",
   "private": true,
-  "description": "Nirapod \u2014 Your Health, Our Priority. Bilingual (Bangla + English) mobile-first health PWA for Bangladesh.",
+  "description": "Nirapod — Your Health, Our Priority. Bilingual (Bangla + English) mobile-first health PWA for Bangladesh.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -28,6 +28,7 @@
     "onnxruntime-web": "^1.31.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+    "server-only": "^0.0.1",
     "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
