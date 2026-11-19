@@ -104,11 +104,11 @@ test('HEIC the browser cannot open: clear message asking for JPG / PNG (English 
   await expect(page.getByTestId('report-step').getByTestId('photo-error')).toContainText('JPG বা PNG');
 });
 
-test('medicine pack from the gallery: OCR → confirm brand', async ({ page }) => {
+test('medicine pack from the gallery: OCR → verified medicine', async ({ page }) => {
   test.slow();
   await page.goto('/en/medicine');
   await page.getByTestId('scan-pack').getByTestId('gallery-input').setInputFiles('public/samples/medicine-pack-ok.png');
-  await expect(page.getByTestId('confirm-step')).toBeVisible({ timeout: 90_000 });
+  await expect(page.getByTestId('result-brand')).toHaveText('Napa', { timeout: 90_000 });
   await expect(page.getByTestId('read-as')).toContainText('Napa');
 });
 

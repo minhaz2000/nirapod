@@ -9,7 +9,8 @@ async function scanSample(page: Page, sample: 'demoOk' | 'demoCheck', locale = '
   await enableDemoMode(page);
   await page.goto(`/${locale}/medicine`);
   await page.getByTestId(`sample-${sample}`).click();
-  await expect(page.getByTestId('confirm-step')).toBeVisible({ timeout: 60_000 });
+  // Verified against the database: a strong match goes straight to the result.
+  await expect(page.getByTestId('scan-pack')).toHaveAttribute('data-step', /result|notSure|notFound/, { timeout: 90_000 });
 }
 
 test.describe('API', () => {
@@ -39,13 +40,13 @@ test.describe('API', () => {
   });
 });
 
-test('scan a normal pack: OCR → confirm brand → no suspicious signs, cheaper brands', async ({ page }) => {
+test('scan a normal pack: OCR → verified strong match (Napa 500 mg tablet) → no suspicious signs, cheaper brands', async ({ page }) => {
   test.slow(); // on-device OCR is CPU-heavy when tests run in parallel
   await scanSample(page, 'demoOk');
+  await expect(page.getByTestId('scan-pack')).toHaveAttribute('data-step', 'result');
   await expect(page.getByTestId('read-as')).toContainText('Napa');
-  // The user must confirm; the brand, strength and form read on the pack are pre-selected.
-  await expect(page.locator('input[type=radio]:checked').locator('xpath=..')).toContainText('Napa 500mg · Tablet');
-  await page.getByTestId('confirm-product').click();
+  await expect(page.getByTestId('result-brand')).toHaveText('Napa');
+  await expect(page.getByTestId('pack-results')).toContainText('500mg · Tablet');
 
   await expect(page.getByTestId('result-generic')).toHaveText('Paracetamol');
   await expect(page.getByTestId('result-indication')).toContainText('pain and fever');
@@ -60,7 +61,7 @@ test('scan a normal pack: OCR → confirm brand → no suspicious signs, cheaper
 test('scan a pack with problems: lists each suspicious sign, never a verdict', async ({ page }) => {
   test.slow(); // on-device OCR is CPU-heavy when tests run in parallel
   await scanSample(page, 'demoCheck');
-  await page.getByTestId('confirm-product').click();
+  if ((await page.getByTestId('scan-pack').getAttribute('data-step')) === 'notSure') await page.getByTestId('candidate').first().click();
   const signs = page.getByTestId('result-signs');
   await expect(signs).toContainText('5 suspicious signs found:');
   for (const code of ['manufacturerSpelling', 'missingBatch', 'expiryBeforeManufacture', 'expired', 'priceFarBelow']) {

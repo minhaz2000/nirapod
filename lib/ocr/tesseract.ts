@@ -11,9 +11,17 @@ export interface OcrWord {
   height: number;
 }
 
+/** One printed line with the height of its tallest word (brands are usually the biggest line on a pack). */
+export interface OcrLine {
+  text: string;
+  height: number;
+  confidence: number;
+}
+
 export interface OcrResult {
   text: string;
   words: OcrWord[];
+  lines: OcrLine[];
   confidence: number;
 }
 
@@ -61,16 +69,18 @@ export async function recognisePrinted(
   await worker.setParameters({ tessedit_pageseg_mode: layout === 'table' ? PSM.SINGLE_BLOCK : PSM.SPARSE_TEXT });
   const { data } = await worker.recognize(image, {}, { text: true, blocks: true });
   const words: OcrWord[] = [];
+  const lines: OcrLine[] = [];
   for (const block of data.blocks ?? []) {
     for (const para of block.paragraphs) {
       for (const line of para.lines) {
-        for (const w of line.words) {
-          words.push({ text: w.text, confidence: w.confidence, height: w.bbox.y1 - w.bbox.y0 });
-        }
+        const lineWords = line.words.map((w) => ({ text: w.text, confidence: w.confidence, height: w.bbox.y1 - w.bbox.y0 }));
+        words.push(...lineWords);
+        const text = lineWords.map((w) => w.text).join(' ').trim();
+        if (text) lines.push({ text, height: Math.max(0, ...lineWords.map((w) => w.height)), confidence: line.confidence });
       }
     }
   }
-  return { text: data.text, words, confidence: data.confidence };
+  return { text: data.text, words, lines, confidence: data.confidence };
 }
 
 export async function terminateOcr(): Promise<void> {

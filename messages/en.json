@@ -479,7 +479,9 @@
       "steps": {
         "checking": "Checking photo quality…",
         "reading": "Reading the pack on this phone… {percent}%",
-        "looking": "Looking up the medicine…"
+        "looking": "Looking up the medicine…",
+        "readingAi": "Reading the pack…",
+        "identifying": "Checking the medicine list…"
       },
       "quality": {
         "title": "This photo may be hard to read",
@@ -490,7 +492,7 @@
         "retake": "Retake photo",
         "continue": "Continue anyway"
       },
-      "privacy": "The photo is read on this phone. Only the brand name is sent to look up the medicine.",
+      "privacy": "The photo is read on this phone, or by an AI service if you agree. Medicine packs carry no personal details, and nothing is stored.",
       "confirm": {
         "title": "Which medicine is this?",
         "readAs": "We read: {words}",
@@ -509,10 +511,10 @@
         "usedFor": "Commonly used for",
         "usedForNote": "From the medicine database (English).",
         "expiry": "Expiry",
-        "expiryOk": "Use before {date}.",
-        "expiresSoon": "Expires soon: use before {date}.",
-        "expired": "The expiry date ({date}) has passed. Ask your pharmacist before using it.",
-        "expiryUnknown": "We could not read the expiry date. Please check the pack yourself.",
+        "expiryOk": "OK until {date}",
+        "expiresSoon": "Expires within {months, plural, one {# month} other {# months}}",
+        "expired": "Expired",
+        "expiryUnknown": "Expiry date not readable — please check the pack",
         "signsTitle": "Suspicious signs",
         "signsFound": "{count, plural, one {# suspicious sign found:} other {# suspicious signs found:}}",
         "noSigns": "No suspicious signs found",
@@ -521,7 +523,6 @@
           "brandSpelling": "The brand name on the pack (“{printed}”) is spelled differently from the registered name “{expected}”. This can also be a reading error, so please look at the pack yourself.",
           "manufacturerSpelling": "The company name on the pack (“{printed}”) is spelled differently from “{expected}”. This can also be a reading error, so please look at the pack yourself.",
           "missingBatch": "No batch number found on the pack.",
-          "missingExpiry": "No expiry date found on the pack.",
           "expiryBeforeManufacture": "The expiry date ({exp}) is not after the manufacture date ({mfg}).",
           "expired": "The expiry date ({exp}) has passed.",
           "priceFarBelow": "The printed price ({printed} each) is far below the usual price ({usual} each)."
@@ -544,13 +545,36 @@
         "printedPrice": "Printed price",
         "registration": "Registration no.",
         "notFound": "Not found",
-        "scanAnother": "Scan another pack"
+        "scanAnother": "Scan another pack",
+        "expiryDate": "Expiry date on the pack: {date}",
+        "expiredAdvice": "Do not use it without asking your pharmacist.",
+        "expiryNoMedicine": "Expiry"
       },
       "errors": {
         "ocr": "Could not read the photo. Please try again with a clearer photo.",
         "offline": "Looking up a medicine needs internet. The photo was read on your phone; please connect and try again.",
         "dataMissing": "The medicine database is not available yet.",
         "generic": "Something went wrong. Please try again."
+      },
+      "consent": "The photo will be sent to an AI service to read the pack. Medicine packs carry no personal details, and nothing is stored.",
+      "consentContinue": "Continue",
+      "consentLocal": "Read on this phone instead",
+      "aiFallback": "The AI service could not be reached, so the pack was read on this phone.",
+      "notSure": {
+        "title": "Not sure which medicine this is",
+        "hint": "Choose the medicine printed on your pack, or type its name. Nothing else is shown until you choose.",
+        "pick": "This is my medicine",
+        "typeName": "Type the name"
+      },
+      "notFound": {
+        "title": "This medicine is not in our medicine list",
+        "hint": "No medicine in the database matches this pack, so we cannot say which medicine it is. The expiry check below still applies. You can also type the name."
+      },
+      "change": "Not this medicine? Choose another",
+      "back": {
+        "add": "Add back/side of the pack",
+        "hint": "The expiry date is often printed on the back or side.",
+        "added": "Back/side of the pack added."
       }
     },
     "explain": {

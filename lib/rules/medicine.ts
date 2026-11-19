@@ -8,6 +8,7 @@
 import { MEDICINE_CHECKS } from '@/config/medicine-checks';
 import { editDistance, foldOcrConfusions, maxTypos } from '@/lib/medicine/fuzzy';
 import { nameKey } from '@/lib/medicine/normalise';
+import { EXPIRY } from '@/config/expiry';
 import { compareDates, expiryEndDate, formatPackDate, type PackDates } from '@/lib/ocr/expiry';
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -72,11 +73,22 @@ export function closestPrintedText(text: string, target: string): { printed: str
   const n = targetKey.split(' ').length;
   const words = text.split(/\s+/).filter((w) => nameKey(w));
   let best: { printed: string; distance: number } | null = null;
-  for (let i = 0; i + n <= words.length; i++) {
-    const printed = words.slice(i, i + n).join(' ').replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
-    const distance = editDistance(foldOcrConfusions(nameKey(printed)), targetKey);
-    if (!best || distance < best.distance) best = { printed, distance };
-    if (distance === 0) break;
+  // Same number of words, and one more word joined without spaces: "No Pain" printed for the brand "Nopain" is the
+  // same name (spacing only), never a spelling difference.
+  for (const size of [n, n + 1]) {
+    for (let i = 0; i + size <= words.length; i++) {
+      const printed = words.slice(i, i + size).join(' ').replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+      // Compare as printed and with OCR confusions undone (on both sides: "International" contains "rn").
+      const raw = nameKey(printed);
+      const distance = Math.min(
+        ...[[raw, targetKey] as const, [foldOcrConfusions(raw), foldOcrConfusions(targetKey)] as const].flatMap(([k, tk]) => [
+          ...(size === n ? [editDistance(k, tk)] : []),
+          editDistance(k.replace(/ /g, ''), tk.replace(/ /g, '')),
+        ]),
+      );
+      if (!best || distance < best.distance) best = { printed, distance };
+      if (distance === 0) return best;
+    }
   }
   return best;
 }
@@ -133,7 +145,8 @@ export function findSuspiciousSigns(input: PackCheckInput): SuspiciousSign[] {
     checkBrandSpelling(input.text, input.product.brand),
     checkManufacturerSpelling(input.text, input.product.manufacturer),
     checkMissingBatch(input.batch),
-    checkMissingExpiry(input.dates),
+    // A missing expiry is NOT a sign: the date is often on another side or not readable in the photo. The expiry
+    // card says "Expiry date not readable — please check the pack" instead (never a guess).
     checkExpiryBeforeManufacture(input.dates),
     checkExpired(input.dates, input.today),
     checkPriceFarBelow(input.printedUnitPrice, input.product.unitPrice),
@@ -145,15 +158,17 @@ export function findSuspiciousSigns(input: PackCheckInput): SuspiciousSign[] {
 
 export type ExpiryStatus =
   | { status: 'unknown' }
-  | { status: 'expired'; exp: string }
-  | { status: 'expiresSoon'; exp: string; daysLeft: number }
-  | { status: 'ok'; exp: string; daysLeft: number };
+  | { status: 'expired'; exp: string; end: Date }
+  | { status: 'expiresSoon'; exp: string; daysLeft: number; end: Date }
+  | { status: 'ok'; exp: string; daysLeft: number; end: Date };
 
+/** Expired / expires within EXPIRY.soonMonths calendar months / OK. Unknown when no EXP date was read. */
 export function expiryStatus(dates: PackDates, today: Date): ExpiryStatus {
   if (!dates.exp) return { status: 'unknown' };
   const exp = formatPackDate(dates.exp);
   const end = expiryEndDate(dates.exp);
-  if (end < today) return { status: 'expired', exp };
+  if (end < today) return { status: 'expired', exp, end };
   const daysLeft = Math.floor((end.getTime() - today.getTime()) / 86_400_000);
-  return daysLeft <= MEDICINE_CHECKS.expiresSoonDays ? { status: 'expiresSoon', exp, daysLeft } : { status: 'ok', exp, daysLeft };
+  const soonLimit = new Date(today.getFullYear(), today.getMonth() + EXPIRY.soonMonths, today.getDate(), 23, 59, 59);
+  return end <= soonLimit ? { status: 'expiresSoon', exp, daysLeft, end } : { status: 'ok', exp, daysLeft, end };
 }

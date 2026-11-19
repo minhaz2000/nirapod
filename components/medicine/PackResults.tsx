@@ -7,7 +7,8 @@ import type { Product } from '@/lib/medicine/repo';
 import { formatPackDate } from '@/lib/ocr/expiry';
 import type { PackReading } from '@/lib/ocr/pack';
 import { printedUnitPrice } from '@/lib/ocr/price';
-import { expiryStatus, findSuspiciousSigns, type SuspiciousSign } from '@/lib/rules/medicine';
+import { findSuspiciousSigns, type SuspiciousSign } from '@/lib/rules/medicine';
+import ExpiryCard from './ExpiryCard';
 
 interface Props {
   product: Product;
@@ -39,7 +40,6 @@ export default function PackResults({ product, reading, alternatives, today = ne
         today,
       })
     : [];
-  const expiry = reading ? expiryStatus(reading.dates, today) : null;
 
   const signText = (s: SuspiciousSign) => {
     switch (s.code) {
@@ -93,27 +93,7 @@ export default function PackResults({ product, reading, alternatives, today = ne
         )}
       </section>
 
-      {expiry && (
-        <section className={card} data-testid="result-expiry" data-status={expiry.status}>
-          <h3 className="text-lg font-bold">{t('expiry')}</h3>
-          <p
-            className={
-              expiry.status === 'expired'
-                ? 'font-semibold text-red-800'
-                : expiry.status === 'expiresSoon'
-                  ? 'font-semibold text-amber-800'
-                  : expiry.status === 'ok'
-                    ? 'text-green-800'
-                    : 'text-slate-800'
-            }
-          >
-            {expiry.status === 'ok' && t('expiryOk', { date: expiry.exp })}
-            {expiry.status === 'expiresSoon' && t('expiresSoon', { date: expiry.exp })}
-            {expiry.status === 'expired' && t('expired', { date: expiry.exp })}
-            {expiry.status === 'unknown' && t('expiryUnknown')}
-          </p>
-        </section>
-      )}
+      {reading && <ExpiryCard dates={reading.dates} today={today} />}
 
       {reading && (
         <section className={card} data-testid="result-signs" data-count={signs.length}>

@@ -136,3 +136,12 @@ export function formatPackDate(d: PackDate): string {
   const mm = String(d.month).padStart(2, '0');
   return d.day ? `${String(d.day).padStart(2, '0')}/${mm}/${d.year}` : `${mm}/${d.year}`;
 }
+
+/**
+ * A single date value whose meaning is already known (e.g. the vision model's "expiry_date" field: "08-2027",
+ * "AUG 27", "31.08.2027"). Returns null when it is not a readable month and year — never a guess.
+ */
+export function parseDateValue(value: string | null | undefined, kind: 'exp' | 'mfg'): PackDate | null {
+  if (!value?.trim()) return null;
+  return parsePackDates(`${kind === 'exp' ? 'EXP' : 'MFG'} ${value.trim()}`)[kind] ?? null;
+}

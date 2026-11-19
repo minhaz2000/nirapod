@@ -123,7 +123,7 @@ describe('dates', () => {
 
   it('expiry status', () => {
     expect(expiryStatus({}, TODAY)).toEqual({ status: 'unknown' });
-    expect(expiryStatus({ exp: { year: 2025, month: 12 } }, TODAY)).toEqual({ status: 'expired', exp: '12/2025' });
+    expect(expiryStatus({ exp: { year: 2025, month: 12 } }, TODAY)).toMatchObject({ status: 'expired', exp: '12/2025' });
     expect(expiryStatus({ exp: { year: 2026, month: 11 } }, TODAY)).toMatchObject({ status: 'expiresSoon', daysLeft: 13 });
     expect(expiryStatus({ exp: { year: 2028, month: 4 } }, TODAY)).toMatchObject({ status: 'ok' });
   });
@@ -175,7 +175,7 @@ describe('findSuspiciousSigns — whole packs', () => {
     for (const s of signs) expect(JSON.stringify(s)).not.toMatch(/fake|genuine|counterfeit/i);
   });
 
-  it('no expiry printed', () => {
-    expect(check('Napa\nBeximco Pharmaceuticals Ltd.\nBatch No. 24A12').map((s) => s.code)).toEqual(['missingExpiry']);
+  it('no expiry read is not a suspicious sign (the date may be on another side or unreadable)', () => {
+    expect(check('Napa\nBeximco Pharmaceuticals Ltd.\nBatch No. 24A12').map((s) => s.code)).toEqual([]);
   });
 });

@@ -9,6 +9,5 @@ export const MEDICINE_CHECKS = {
    * price is the unusual case. Higher printed prices are not flagged.
    */
   priceFarBelowRatio: 0.5,
-  /** Expiry within this many days is shown as "expires soon" (a status, not a suspicious sign). */
-  expiresSoonDays: 30,
+  // The "expires soon" window moved to config/expiry.ts (EXPIRY.soonMonths).
 } as const;
