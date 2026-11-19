@@ -61,3 +61,11 @@ export function checkReport(entries: readonly ReportEntry[]): CheckedValue[] {
 }
 
 export const isOutOfRange = (c: CheckedValue) => c.status === 'low' || c.status === 'high';
+
+/** The range as shown to the user: as printed, or the reference range used. */
+export function rangeText(v: CheckedValue): string | null {
+  if (v.range) return v.range.text;
+  if (!v.usedRange) return null;
+  const { low, high } = v.usedRange;
+  return low !== undefined && high !== undefined ? `${low} - ${high}` : high !== undefined ? `< ${high}` : `> ${low}`;
+}

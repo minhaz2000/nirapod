@@ -10,6 +10,7 @@ import {
   fetchAlternatives,
   identifyMedicine,
   readPackWithAi,
+  VisionError,
   searchMedicines,
   type AlternativesResponse,
   type IdentifyResponse,
@@ -18,7 +19,7 @@ import {
 import type { ScoredCandidate } from '@/lib/medicine/identify';
 import { preselectProduct } from '@/lib/medicine/pick';
 import type { BrandMatch, Product } from '@/lib/medicine/repo';
-import { evidenceFromReading, mergeReadings, readPack, readingFromVision, type PackReading } from '@/lib/ocr/pack';
+import { evidenceFromReading, isUsefulPackText, mergeReadings, readPack, readingFromVision, type PackReading } from '@/lib/ocr/pack';
 import { getSettings } from '@/lib/store/settings';
 import ExpiryCard from './ExpiryCard';
 import PackResults from './PackResults';
@@ -37,6 +38,8 @@ type Step =
   | { k: 'notSure'; reading: PackReading; candidates: ScoredCandidate[] }
   /** Not in the database: said clearly, and the expiry check is still shown. */
   | { k: 'notFound'; reading: PackReading }
+  /** On-phone OCR read almost nothing useful (foil glare, blur): no guesses, tips instead. */
+  | { k: 'unreadable'; reading: PackReading }
   /** Typed search results. */
   | { k: 'confirm'; reading: PackReading | null; matches: BrandMatch[]; noMatchFor?: string }
   | { k: 'result'; reading: PackReading | null; product: Product; alternatives: AlternativesResponse; candidates: ScoredCandidate[] }
@@ -58,6 +61,7 @@ export default function ScanPack() {
   const [query, setQuery] = useState('');
   const [reading, setReading] = useState<PackReading | null>(null);
   const [notice, setNotice] = useState<'aiFallback' | 'backAdded' | null>(null);
+  const [aiReason, setAiReason] = useState<string | null>(null);
   // The result a back / side photo extends (kept while that photo is read).
   const [lastResult, setLastResult] = useState<Extract<Step, { k: 'result' }> | null>(null);
 
@@ -106,8 +110,11 @@ export default function ScanPack() {
         try {
           const { bitmapToJpegBase64 } = await import('@/lib/image/photo');
           r = readingFromVision(await readPackWithAi(await bitmapToJpegBase64(bitmap)));
-        } catch {
-          // No key, no internet or a failed answer: read the pack on the phone instead.
+        } catch (err) {
+          // Never silent: the user is told, the reason is kept (and logged on the server), then the phone reads it.
+          const reason = err instanceof VisionError ? err.reason : 'unknown';
+          console.warn(`[nirapod] AI pack reading unavailable: ${reason}`);
+          setAiReason(reason);
           setNotice('aiFallback');
           r = await readOnPhone(bitmap);
         }
@@ -119,6 +126,7 @@ export default function ScanPack() {
     }
     if (side === 'back' && reading) return addBack(r);
     setReading(r);
+    if (r.source !== 'vision' && !isUsefulPackText(r.text)) return setStep({ k: 'unreadable', reading: r });
     await identify(r);
   }
 
@@ -181,6 +189,7 @@ export default function ScanPack() {
     setQuery('');
     setConsented(null);
     setNotice(null);
+    setAiReason(null);
     setLastResult(null);
     setStep({ k: 'idle' });
   }
@@ -248,7 +257,7 @@ export default function ScanPack() {
       </h2>
 
       {notice && (
-        <div data-testid={`scan-notice-${notice}`}>
+        <div data-testid={`scan-notice-${notice}`} data-reason={notice === 'aiFallback' ? (aiReason ?? '') : undefined}>
           <Notice tone={notice === 'aiFallback' ? 'warning' : 'info'}>{notice === 'aiFallback' ? t('aiFallback') : t('back.added')}</Notice>
         </div>
       )}
@@ -380,6 +389,26 @@ export default function ScanPack() {
           <button type="button" onClick={restart} className="min-h-12 w-full rounded-xl border-2 border-teal-800 px-4 font-bold text-teal-900">
             {t('result.scanAnother')}
           </button>
+        </div>
+      )}
+
+      {step.k === 'unreadable' && (
+        <div className="space-y-3" data-testid="unreadable">
+          <Notice tone="warning">
+            <p className="text-lg font-bold">{t('unreadable.title')}</p>
+          </Notice>
+          <div className="rounded-2xl bg-white p-4 shadow-sm">
+            <p className="font-semibold">{t('unreadable.tipsTitle')}</p>
+            <ul className="list-disc space-y-1 pl-5">
+              {(['glare', 'box', 'steady', 'light'] as const).map((k) => (
+                <li key={k}>{t(`unreadable.tips.${k}`)}</li>
+              ))}
+            </ul>
+          </div>
+          <button type="button" onClick={restart} data-testid="unreadable-retake" className="min-h-12 w-full rounded-xl bg-teal-800 px-4 font-bold text-white">
+            {t('quality.retake')}
+          </button>
+          {searchForm(t('notSure.typeName'))}
         </div>
       )}
 

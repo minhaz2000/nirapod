@@ -134,6 +134,20 @@ export interface Settings {
   activePersonId?: string;
 }
 
+/** One message of the Nirapod Assistant chat, kept only on this phone (no photos are stored). */
+export interface ChatMessage {
+  id?: number;
+  at: number;
+  role: 'user' | 'assistant';
+  text: string;
+  /** Cards shown with the message (server cards and local photo-result cards), as plain JSON. */
+  cards?: unknown[];
+  sources?: Array<{ title: string; uri: string }>;
+  /** Verified photo results this message added to the conversation (pack, confirmed prescription, report). */
+  context?: unknown;
+  source?: 'ai' | 'template' | 'safety' | 'local';
+}
+
 export class NirapodDB extends Dexie {
   profile!: EntityTable<Profile, 'id'>;
   meals!: EntityTable<Meal, 'id'>;
@@ -145,6 +159,7 @@ export class NirapodDB extends Dexie {
   doses!: EntityTable<DoseLog, 'id'>;
   checkups!: EntityTable<Checkup, 'id'>;
   reminders!: EntityTable<ReminderSettings, 'id'>;
+  chat!: EntityTable<ChatMessage, 'id'>;
 
   constructor(name = 'nirapod') {
     super(name);
@@ -178,6 +193,8 @@ export class NirapodDB extends Dexie {
           g.kind ??= 'random';
         });
       });
+    // Version 3: Nirapod Assistant chat history (on this phone only; "Delete all my data" removes it).
+    this.version(3).stores({ chat: '++id, at' });
   }
 }
 

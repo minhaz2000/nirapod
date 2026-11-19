@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
   }
 
   const result = await llmJson<{ items?: unknown }>({
+    op: 'handwriting',
     system: SYSTEM,
     text: 'Transcribe the medicines on this prescription.',
     image: { base64: image, mediaType },
@@ -103,9 +104,9 @@ export async function POST(req: NextRequest) {
     maxTokens: 4000,
   });
   if (!result.ok) {
-    return result.error === 'busy'
-      ? NextResponse.json({ error: 'busy' }, { status: 429 })
-      : NextResponse.json({ error: 'failed' }, { status: 502 });
+    return result.error === 'quota'
+      ? NextResponse.json({ error: 'busy', reason: result.error }, { status: 429 })
+      : NextResponse.json({ error: 'failed', reason: result.error }, { status: 502 });
   }
   const raw = Array.isArray(result.value.items) ? (result.value.items as HandwritingItem[]) : null;
   if (!raw) return NextResponse.json({ error: 'failed' }, { status: 502 });

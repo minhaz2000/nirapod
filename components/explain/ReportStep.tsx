@@ -15,12 +15,8 @@ interface Props {
   demo: boolean;
 }
 
-export function rangeText(v: CheckedValue): string | null {
-  if (v.range) return v.range.text;
-  if (!v.usedRange) return null;
-  const { low, high } = v.usedRange;
-  return low !== undefined && high !== undefined ? `${low} - ${high}` : high !== undefined ? `< ${high}` : `> ${low}`;
-}
+export { rangeText } from '@/lib/rules/report-ranges';
+import { rangeText } from '@/lib/rules/report-ranges';
 
 const STATUS_STYLE = {
   high: 'bg-red-100 text-red-900',

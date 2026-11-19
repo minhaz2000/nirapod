@@ -13,7 +13,8 @@
     "settings": "Settings",
     "about": "About",
     "back": "Back to home",
-    "main": "Main navigation"
+    "main": "Main navigation",
+    "assistant": "Assistant"
   },
   "language": {
     "label": "Language",
@@ -116,6 +117,10 @@
       "emergency": {
         "title": "Emergency Support",
         "desc": "Danger signs, one tap to call 999, share your location."
+      },
+      "assistant": {
+        "title": "Nirapod Assistant",
+        "desc": "Ask about a medicine, or send a photo of a pack, prescription or report."
       }
     }
   },
@@ -559,7 +564,7 @@
       "consent": "The photo will be sent to an AI service to read the pack. Medicine packs carry no personal details, and nothing is stored.",
       "consentContinue": "Continue",
       "consentLocal": "Read on this phone instead",
-      "aiFallback": "The AI service could not be reached, so the pack was read on this phone.",
+      "aiFallback": "AI reading unavailable right now — read on the phone instead",
       "notSure": {
         "title": "Not sure which medicine this is",
         "hint": "Choose the medicine printed on your pack, or type its name. Nothing else is shown until you choose.",
@@ -575,6 +580,16 @@
         "add": "Add back/side of the pack",
         "hint": "The expiry date is often printed on the back or side.",
         "added": "Back/side of the pack added."
+      },
+      "unreadable": {
+        "title": "We couldn't read this pack. Try a clearer photo or type the name",
+        "tipsTitle": "Tips for a readable photo:",
+        "tips": {
+          "glare": "Shiny foil strips reflect light: tilt the strip until the glare is gone, or shade it with your hand.",
+          "box": "Photograph the printed box instead, if it is at hand — it is much easier to read than the foil strip.",
+          "steady": "Hold the phone steady and close enough that the name fills most of the photo; tap to focus.",
+          "light": "Use daylight or a bright room; avoid the flash, which causes glare."
+        }
       }
     },
     "explain": {
@@ -969,5 +984,115 @@
     },
     "moreLink": "Family Plan (preview)",
     "moreDesc": "Our main Premium idea: help your parents from far away. Not live yet."
+  },
+  "assistant": {
+    "title": "Nirapod Assistant",
+    "intro": "Ask about a medicine, or attach a photo of a medicine pack, prescription or lab report. Answers come from our checked medicine database and safety rules.",
+    "placeholder": "Type your question…",
+    "send": "Send",
+    "attach": "Attach a photo",
+    "attachTitle": "What is in the photo?",
+    "attachKind": {
+      "pack": "Medicine pack",
+      "prescription": "Prescription",
+      "report": "Lab report"
+    },
+    "skinNote": "Skin photos are not accepted in chat. Use Skin Screening, which keeps the photo on your phone.",
+    "cancel": "Cancel",
+    "consent": "The photo will be sent to an AI service to read it. Names and phone numbers are removed first, and nothing is stored.",
+    "consentContinue": "Continue",
+    "consentLocal": "Read on this phone instead",
+    "reportLocal": "A lab report is read on this phone; the photo is not sent.",
+    "clear": "Clear chat",
+    "cleared": "Chat cleared.",
+    "historyNote": "This chat is saved only on this phone.",
+    "thinking": "Checking…",
+    "readingPhoto": "Reading the photo…",
+    "disclaimer": "Information only, not medical advice",
+    "you": "You",
+    "assistantName": "Nirapod",
+    "photoSent": "Photo: {kind}",
+    "starters": {
+      "what": "What is this medicine?",
+      "expiry": "When does it expire?",
+      "report": "Explain my report",
+      "cheaper": "Cheaper alternative?"
+    },
+    "starterHint": {
+      "photo": "Attach a photo of the pack, or type its name.",
+      "report": "Attach a photo of your lab report.",
+      "cheaper": "Type the medicine name, or attach a photo of the pack."
+    },
+    "aiUnavailable": "The AI assistant is unavailable right now. You can still use the checks directly:",
+    "aiOff": "AI answers are not set up on this app. The assistant answers from the medicine database only.",
+    "aiReading": "AI reading unavailable right now — read on the phone instead",
+    "links": {
+      "scan": "Scan a medicine pack",
+      "explain": "Report and prescription",
+      "emergency": "Emergency 999",
+      "skin": "Skin screening"
+    },
+    "error": "Something went wrong. Please try again.",
+    "offline": "No internet connection. Answers need internet; the scan screens still work on the phone.",
+    "unreadable": "We couldn't read this photo. Try a clearer photo or type the name.",
+    "cards": {
+      "emergencyTitle": "This may be an emergency",
+      "emergencyCall": "Call 999 now",
+      "emergencyLow": "If the person is awake, give something sweet now (juice, sugar or glucose). Do not give food or drink if they are not awake.",
+      "emergencyOpen": "Open Emergency",
+      "refusalTitle": "I can't help with that",
+      "medicineTitle": "From our medicine list",
+      "generic": "Generic",
+      "strengthForm": "Strength and form",
+      "manufacturer": "Manufacturer",
+      "usedFor": "Commonly used for",
+      "genericOnly": "Generic name (no brand chosen)",
+      "alternativesTitle": "Same generic, strength and form",
+      "cheaper": "cheaper",
+      "notComparable": "Prices cannot be compared for this medicine.",
+      "pharmacist": "Confirm with your pharmacist.",
+      "duplicatesTitle": "Same medicine twice?",
+      "duplicatesNone": "No medicine appears twice among: {list}.",
+      "expiryTitle": "Expiry",
+      "notFoundTitle": "Not in our medicine list",
+      "reportTitle": "Your report",
+      "sourcesTitle": "Sources (web)",
+      "sourcesNote": "Our medicine database wins if these sources say something different.",
+      "unsureTitle": "Not sure",
+      "packTitle": "Medicine pack",
+      "pickTitle": "Not sure which medicine this is — choose one",
+      "prescriptionTitle": "Prescription — check each line",
+      "confirmLine": "Correct",
+      "removeLine": "Remove",
+      "confirmed": "Confirmed",
+      "rxNote": "Read from handwriting. Confirm only the lines that match the prescription."
+    },
+    "answers": {
+      "emergency": "This may be an emergency. Call 999 now. Nirapod cannot help with emergencies in chat.",
+      "emergencyLow": "Low blood sugar can be an emergency. If the person is awake, give something sweet now. Call 999 if they are confused, very drowsy or not getting better.",
+      "refuse": {
+        "dose": "I can't advise on doses, or on starting, stopping or changing any medicine or insulin. Ask your doctor or pharmacist; do not stop on your own.",
+        "diagnosis": "I can't diagnose illnesses. Please see a doctor. I can explain a report or a medicine.",
+        "authenticity": "Nirapod does not judge whether a medicine is real; it only lists suspicious signs on the pack. Scan the pack, and show it to your pharmacist.",
+        "skin": "Skin photos are not accepted in chat. Use Skin Screening, which keeps the photo on your phone."
+      },
+      "medicine": "{brand} ({generic}, {strength}, {form}) is in our medicine list.",
+      "genericOnly": "{generic} is a generic name in our medicine list.",
+      "usedFor": "Commonly used for: {use}",
+      "alternatives": "Brands with the same generic, strength and form as {brand} that cost less: {list}.",
+      "noCheaper": "No cheaper brand with the same generic, strength and form as {brand} was found.",
+      "notComparable": "Prices for {brand} cannot be compared.",
+      "pharmacist": "Confirm with your pharmacist.",
+      "duplicates": "The same medicine may appear twice: {list}. Ask your doctor or pharmacist; do not stop on your own.",
+      "noDuplicates": "No medicine appears twice.",
+      "expiry": {
+        "expired": "Expired ({date}). Do not use it without asking your pharmacist.",
+        "expiresSoon": "Expires within 3 months ({date}).",
+        "ok": "OK until {date}."
+      },
+      "expiryUnknown": "Expiry date not readable — please check the pack, or send a photo of the side with the EXP date.",
+      "notFound": "I couldn't find “{query}” in our medicine list. Please check the spelling or ask your pharmacist.",
+      "unsure": "I'm not sure. Please ask a doctor or pharmacist. You can also send a photo of the pack or report."
+    }
   }
 }

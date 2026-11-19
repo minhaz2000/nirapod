@@ -176,3 +176,18 @@ export function evidenceFromReading(r: PackReading): {
     text: r.text,
   };
 }
+
+const PACK_WORDS = /\b(?:tab(?:let)?s?|cap(?:sule)?s?|syrup|suspension|injection|drops?|cream|ointment|gel|mg|mcg|ml|bp|usp|exp|expiry|mfg|mfd|batch|lot|ltd|limited|pharma\w*|laborator\w*|dar|mrp)\b/i;
+
+/**
+ * Did on-phone OCR read anything useful? A shiny foil strip or a blurred photo often gives a few random letters.
+ * Useful = at least 2 words of 3+ letters plus a typical pack word (Tablet, mg, EXP, Ltd …), or 6+ word-like words.
+ */
+export function isUsefulPackText(text: string): boolean {
+  const words = normaliseOcrText(text)
+    .split(/\s+/)
+    .map((w) => w.replace(/[^A-Za-z]/g, ''))
+    .filter((w) => w.length >= 3);
+  if (words.length < 2) return false;
+  return PACK_WORDS.test(normaliseOcrText(text)) || (words.length >= 6 && words.filter((w) => /[aeiouy]/i.test(w)).length >= 4);
+}

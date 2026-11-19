@@ -24,13 +24,13 @@ function ngrams(words: string[], maxN = 3): string[] {
 }
 
 /** Safe phrases that mention stopping are removed before the dose-advice patterns run. */
-const SAFE_PHRASES = [
+export const SAFE_PHRASES = [
   /\b(?:do not|don't|never|please do not)\s+(?:stop|change|start)\b[^.!?\n]*/gi,
   /নিজে থেকে[^।.!?\n]*(?:করবেন না)/g,
   /বন্ধ\s*(?:বা\s*পরিবর্তন\s*)?করবেন না/g,
 ];
 
-const DOSE_ADVICE = [
+export const DOSE_ADVICE = [
   /\b(?:stop|discontinue|quit|pause)\s+(?:taking|using|the|your|this|these|it|them|all)\b/i,
   /\b(?:increase|decrease|reduce|lower|raise|halve|skip|cut|adjust|change)\b[^.!?\n]{0,40}\b(?:dose|doses|dosage|tablets?|capsules?|insulin|units?|mg)\b/i,
   // "double the dose" is advice; "may mean a double dose" is a warning and is allowed
@@ -44,7 +44,7 @@ const DOSE_ADVICE = [
   /(?:শুরু\s*করুন|খাওয়া\s*শুরু)/,
 ];
 
-const DIAGNOSIS = [
+export const DIAGNOSIS = [
   /\byou (?:have|are suffering from|definitely have)\s+(?:diabetes|anaemia|anemia|cancer|kidney|liver|heart|hypertension|high blood pressure|an? infection|thyroid|scabies)/i,
   /আপনার\s+(?:ডায়াবেটিস|রক্তস্বল্পতা|ক্যান্সার|কিডনি রোগ|হৃদরোগ|উচ্চ রক্তচাপ|সংক্রমণ)\s+(?:আছে|হয়েছে)/,
 ];

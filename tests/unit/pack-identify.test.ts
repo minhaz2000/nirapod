@@ -168,3 +168,11 @@ describe('readings from the vision model and the back of the pack', () => {
     expect(front.dates).toEqual({}); // the front alone has no expiry: "not readable", never guessed
   });
 });
+
+describe('unreadable OCR: no unrelated candidates', () => {
+  it('only a weak look-alike brand and nothing printed agreeing → none, with no candidates offered', () => {
+    const r = identify({ source: 'ocr', brandTexts: ['Pain'], text: 'Pain' });
+    expect(r.verdict).toBe('none');
+    expect(r.candidates).toEqual([]);
+  });
+});

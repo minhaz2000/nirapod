@@ -77,6 +77,26 @@ manufacturer; a candidate that contradicts the pack loses. Strong match → the 
 the top 3 or types the name; none → "not in our medicine list", with the expiry check still shown. Dates are taken
 only next to an EXP / MFG label; thresholds are in `config/expiry.ts` and `config/pack-identify.ts`.
 
+**Checking the AI setup:** open `/api/llm/health` on the deployed site. It makes one tiny real call to the
+configured provider and returns `ok: true`, or the exact error (`missing_key`, `missing_model`, `invalid_key`,
+`invalid_model`, `quota`, `permission`, `network`, `timeout`) with advice, the model IDs the key can use (`models`,
+from Gemini `models.list`) and suggested ones (`suggested`). It never returns the key; results are cached for 30 s.
+Set `HEALTH_TOKEN` to require `?token=…`. Gemini keys may start with `AIza` or `AQ.`; both are sent in the
+`x-goog-api-key` header. Every AI failure is logged on the server as `[llm] <operation> via <provider> failed: <kind>`
+(see the Vercel function logs) and the user is told "AI reading unavailable right now — read on the phone instead".
+
+**Nirapod Assistant** (`/assistant`, `POST /api/assistant`): a chat in Bangla and English. Each question goes
+through, in order: deterministic safety rules (danger signs or low sugar → the Emergency 999 card first; dose, start /
+stop / change, diagnosis and "is it fake?" questions refused), a plan by the language model (intent and medicine names
+only — it never answers), our tools (medicine database search, exact-match alternatives, duplicate generics, expiry
+check, report explanation from `lib/explain`), Google Search grounding for general information (Gemini only, always
+with source links; the database wins), and a composed answer that is validated (no dose advice, no diagnosis, no
+"fake/genuine", no medicine names outside the results) or replaced by a deterministic answer. Photos (pack,
+prescription, lab report — never skin) use the same pipelines and consent note as the scan screens; prescription
+lines must be confirmed; reports are read on the phone. Chat history is in IndexedDB on the phone with a Clear button.
+Without a key it answers from the database only and links to the scan screens. E2E tests for the AI paths run a second
+app server against a local mock of the Gemini API (`tests/e2e/mock-gemini.mjs`, `LLM_TEST_GEMINI_BASE_URL`).
+
 **Privacy note on Gemini:** on Google's free (unpaid) tier, Google may use submitted content to improve its
 products and human reviewers may read it. For real patient data, use a paid (billing-enabled) Gemini project, or
 Anthropic, under terms that do not use API data for training.
