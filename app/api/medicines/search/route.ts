@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { getMedicineDb } from '@/lib/medicine/db';
-import { getDataInfo, searchBrands } from '@/lib/medicine/repo';
+import { getDataInfo, searchBrandsAndGenerics } from '@/lib/medicine/repo';
 import { redact } from '@/lib/privacy/redact';
 
-/** GET /api/medicines/search?q=napa — fuzzy brand search (typos and OCR misreads tolerated). */
+/** GET /api/medicines/search?q=napa — fuzzy brand search (typos and OCR misreads tolerated), plus generic names. */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   if (!db) return NextResponse.json({ error: 'data_not_built' }, { status: 503 });
 
   return NextResponse.json(
-    { query: q, results: searchBrands(db, q), data: getDataInfo(db) },
+    { query: q, results: searchBrandsAndGenerics(db, q), data: getDataInfo(db) },
     { headers: { 'Cache-Control': 'public, max-age=3600' } },
   );
 }

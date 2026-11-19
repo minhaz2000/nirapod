@@ -47,13 +47,30 @@ shown on stage without real data or an API key. Demo plate photos go in `public/
 
 ## Environment variables
 
-Both are **optional** and **server-only** (never prefixed with `NEXT_PUBLIC_`). Without them everything still
-works: prescriptions are typed or picked from the medicine list, and explanations use the built-in template.
+All are **optional** and **server-only** (never prefixed with `NEXT_PUBLIC_`). Without them everything still
+works: medicine names are typed with autocomplete from the local medicine database (brand and generic, Latin or
+Bangla script), a printed prescription can be read on the phone and matched to the closest medicine names
+("Metfrmin" → Metformin), and explanations use the built-in template. Every suggestion is confirmed by the user.
 
 | Variable | Used by | Purpose |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | `/api/handwriting`, `/api/explain` | Anthropic API key |
-| `ANTHROPIC_MODEL` | same | Model id, e.g. `claude-opus-5-5` (no model name is hard-coded) |
+| `LLM_PROVIDER` | `/api/handwriting`, `/api/explain` | `anthropic` or `gemini`: which provider to use when both are set up |
+| `ANTHROPIC_API_KEY` | same | Anthropic API key |
+| `ANTHROPIC_MODEL` | same | Anthropic model id (no model name is hard-coded) |
+| `GEMINI_API_KEY` | same | Google Gemini API key (Google AI Studio) |
+| `GEMINI_MODEL` | same | Gemini model id, e.g. a current Flash model from AI Studio (no model name is hard-coded) |
+
+**Which provider is used** (`lib/server/llm-select.ts`): a provider counts only when both its key and its model
+are set. `LLM_PROVIDER` picks one of the configured providers; if it names one that is not configured, or is not
+set, the configured one is used (Anthropic first if both are). The About page and the medicine page show the
+provider's name (never the key or model). Both providers get exactly the same input and the same checks:
+the prescription header is cropped and text is redacted before sending, the user agrees in a consent note before a
+photo is sent, every line read is confirmed by the user (rule 7), and `/api/explain` output that adds any medicine,
+number, dose advice or diagnosis is replaced by the template (rule 8).
+
+**Privacy note on Gemini:** on Google's free (unpaid) tier, Google may use submitted content to improve its
+products and human reviewers may read it. For real patient data, use a paid (billing-enabled) Gemini project, or
+Anthropic, under terms that do not use API data for training.
 
 ## Deploying (Vercel)
 

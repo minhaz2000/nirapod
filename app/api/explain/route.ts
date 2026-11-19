@@ -7,13 +7,13 @@ import { parseExplainInput, type ExplainInput } from '@/lib/explain/input';
 import { buildTemplate, type ExplainT } from '@/lib/explain/template';
 import { validateExplanation } from '@/lib/explain/validate';
 import { getMedicineDb } from '@/lib/medicine/db';
-import { getAnthropic } from '@/lib/server/anthropic';
+import { llmAvailable, llmText } from '@/lib/server/llm';
 
 /**
  * POST /api/explain — plain-language explanation of ALREADY-CHECKED results (rule 8).
  *
  * Input: only the structured results (values with ranges, confirmed medicines, rule findings, relations, the doctor's
- * written diagnosis). The template explanation is always built from them. If the Anthropic API is configured, the
+ * written diagnosis). The template explanation is always built from them. If a language model (Anthropic or Gemini) is configured, the
  * model is asked to rephrase the same facts; its text is validated (no new medicine names, no new numbers, no dose
  * advice, no diagnosis) and replaced by the template if it fails. Without a key, the template is returned.
  * Nothing is stored or logged.
@@ -74,28 +74,14 @@ export async function POST(req: NextRequest) {
   const reply = (source: 'ai' | 'template', text: string, reason?: string) =>
     NextResponse.json({ source, text, lines: source === 'template' ? template : undefined, reason }, { headers: { 'Cache-Control': 'no-store' } });
 
-  const ai = getAnthropic();
-  if (!ai) return reply('template', templateText, 'not_available');
+  if (!llmAvailable()) return reply('template', templateText, 'not_available');
   const db = getMedicineDb();
   if (!db) return reply('template', templateText, 'data_not_built'); // cannot validate medicine names → do not use AI
 
-  try {
-    const response = await ai.client.messages.create({
-      model: ai.model,
-      max_tokens: 2000,
-      system: systemPrompt(input.locale),
-      messages: [{ role: 'user', content: JSON.stringify(facts(input)) }],
-    });
-    if (response.stop_reason !== 'end_turn') return reply('template', templateText, 'incomplete');
-    const text = response.content
-      .filter((b): b is Extract<typeof b, { type: 'text' }> => b.type === 'text')
-      .map((b) => b.text)
-      .join('\n')
-      .trim();
-    const check = validateExplanation(text, input, { dictionary: medicineDictionary(db), allowedText: templateText });
-    if (!check.ok) return reply('template', templateText, `validation_failed:${check.reason}`);
-    return reply('ai', text);
-  } catch {
-    return reply('template', templateText, 'ai_error');
-  }
+  const result = await llmText({ system: systemPrompt(input.locale), text: JSON.stringify(facts(input)), maxTokens: 2000 });
+  if (!result.ok) return reply('template', templateText, result.error === 'incomplete' ? 'incomplete' : 'ai_error');
+  // Rule 8: any new medicine name, number or dose advice → the template is used instead.
+  const check = validateExplanation(result.value, input, { dictionary: medicineDictionary(db), allowedText: templateText });
+  if (!check.ok) return reply('template', templateText, `validation_failed:${check.reason}`);
+  return reply('ai', result.value);
 }

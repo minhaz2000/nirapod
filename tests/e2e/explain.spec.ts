@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 
-// The test server runs WITHOUT ANTHROPIC_API_KEY: everything here is the no-key path.
+// The test server runs WITHOUT any AI key (Anthropic or Gemini): everything here is the no-key path.
 
 async function settings(page: Page, opts: { demo?: boolean; pregnant?: boolean; allergies?: string } = {}) {
   await page.goto('/en/settings');
@@ -28,7 +28,7 @@ async function confirmAll(page: Page) {
 
 test.describe('API without a key', () => {
   test('handwriting is "not available"', async ({ request }) => {
-    expect(await (await request.get('/api/handwriting')).json()).toEqual({ available: false });
+    expect(await (await request.get('/api/handwriting')).json()).toEqual({ available: false, provider: null });
     const res = await request.post('/api/handwriting', { data: { image: 'aGVsbG8=', mediaType: 'image/jpeg' } });
     expect(res.status()).toBe(503);
     expect(await res.json()).toEqual({ error: 'not_available' });

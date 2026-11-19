@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { searchMedicines } from '@/lib/medicine/client';
+import { searchMedicines, suggestMedicineNames, type NameSuggestion } from '@/lib/medicine/client';
 import { strengthKey } from '@/lib/medicine/normalise';
 import type { Product } from '@/lib/medicine/repo';
 import type { RxLine } from './types';
@@ -24,6 +24,9 @@ export default function RxLineEditor({ line, onChange, onRemove }: Props) {
   const [candidates, setCandidates] = useState<Product[] | null>(null);
   const [searchedFor, setSearchedFor] = useState<string | null>(null);
   const [query, setQuery] = useState(line.medicine);
+  // Autocomplete: only while the user is typing the name (not for names read from a photo until edited).
+  const [typing, setTyping] = useState(false);
+  const [names, setNames] = useState<{ q: string; list: NameSuggestion[] } | null>(null);
   const lowConfidence = line.confidence !== null && line.confidence < 0.7;
 
   // Look up the medicine name in the database (debounced). The name is redacted before it is sent.
@@ -36,7 +39,11 @@ export default function RxLineEditor({ line, onChange, onRemove }: Props) {
       searchMedicines(q)
         .then(({ results }) => {
           if (!alive) return;
-          const products = results.slice(0, 2).flatMap((b) => b.products).slice(0, 12);
+          // The two best brands, plus a generic-name match ("metformin") so a line can be checked without a brand.
+          const products = results
+            .filter((b, i) => i < 2 || b.genericOnly)
+            .flatMap((b) => b.products)
+            .slice(0, 12);
           setCandidates(products);
           setSearchedFor(q);
           if (products.length) {
@@ -60,6 +67,23 @@ export default function RxLineEditor({ line, onChange, onRemove }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-search only when the typed name changes
   }, [query, line.confirmed]);
 
+  useEffect(() => {
+    if (!typing || line.confirmed) return;
+    const q = query.trim();
+    if (q.length < 2) return;
+    let alive = true;
+    const timer = setTimeout(() => {
+      suggestMedicineNames(q)
+        .then((list) => alive && setNames({ q, list }))
+        .catch(() => alive && setNames({ q, list: [] }));
+    }, 250);
+    return () => {
+      alive = false;
+      clearTimeout(timer);
+    };
+  }, [query, typing, line.confirmed]);
+
+  const autocomplete = typing && names && names.q === query.trim() && query.trim().length >= 2 ? names.list : [];
   const shown = query.trim().length >= 2 ? candidates : null;
   // Confirming waits for the database lookup of the current name, so a line is never confirmed by accident unmatched.
   const searching = query.trim().length >= 2 && searchedFor !== query.trim();
@@ -72,8 +96,12 @@ export default function RxLineEditor({ line, onChange, onRemove }: Props) {
         data-testid={`line-${key}`}
         onChange={(e) => {
           set({ [key]: e.target.value, ...(key === 'medicine' ? { product: null } : {}) });
-          if (key === 'medicine') setQuery(e.target.value);
+          if (key === 'medicine') {
+            setQuery(e.target.value);
+            setTyping(true);
+          }
         }}
+        {...(key === 'medicine' ? { autoComplete: 'off', 'aria-autocomplete': 'list' as const, lang: 'bn' } : {})}
         className="min-h-11 w-full rounded-lg border-2 border-slate-300 px-2"
       />
     </label>
@@ -105,7 +133,35 @@ export default function RxLineEditor({ line, onChange, onRemove }: Props) {
         </p>
       )}
       <div className="grid grid-cols-2 gap-2">
-        <div className="col-span-2">{field('medicine')}</div>
+        <div className="col-span-2">
+          {field('medicine')}
+          {autocomplete.length > 0 && (
+            <div className="mt-1 rounded-lg border-2 border-teal-700 bg-white" data-testid="rx-autocomplete">
+              <p className="px-2 pt-1 text-xs font-semibold text-slate-700">{t('suggestions')}</p>
+              <ul>
+                {autocomplete.map((s) => (
+                  <li key={`${s.kind}-${s.name}`}>
+                    <button
+                      type="button"
+                      data-testid="rx-autocomplete-option"
+                      data-kind={s.kind}
+                      onClick={() => {
+                        onChange((l) => ({ ...l, medicine: s.name, product: null, confirmed: false }));
+                        setQuery(s.name);
+                        setTyping(false);
+                      }}
+                      className="flex min-h-11 w-full items-center gap-2 px-2 text-left hover:bg-teal-50"
+                    >
+                      <span className="font-semibold">{s.name}</span>
+                      <span className="rounded-full bg-slate-200 px-2 text-xs">{t(`kind.${s.kind}`)}</span>
+                      {s.kind === 'brand' && s.generic && <span className="truncate text-xs text-slate-700">{s.generic}</span>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
         {field('strength')}
         {field('frequency')}
         <div className="col-span-2">{field('duration')}</div>
@@ -126,12 +182,18 @@ export default function RxLineEditor({ line, onChange, onRemove }: Props) {
                   onChange={() => onChange((l) => ({ ...l, product: p, confirmed: false }))}
                   className="size-5 accent-teal-800"
                 />
-                <span className="text-sm">
-                  <strong>
-                    {p.brand} {p.strength}
-                  </strong>{' '}
-                  · {p.form} · {p.generic}
-                </span>
+                {p.genericOnly ? (
+                  <span className="text-sm">
+                    <strong>{p.generic}</strong> · {t('genericOnly')}
+                  </span>
+                ) : (
+                  <span className="text-sm">
+                    <strong>
+                      {p.brand} {p.strength}
+                    </strong>{' '}
+                    · {p.form} · {p.generic}
+                  </span>
+                )}
               </label>
             ))}
             <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-lg px-2 hover:bg-slate-50">

@@ -5,6 +5,7 @@
 import type Database from 'better-sqlite3';
 import { rankKeysWithVariants } from './fuzzy';
 import { nameKey, type Pack, type PackUnit } from './normalise';
+import { buildNameIndex, hasBangla, suggestNames, type NameEntry, type NameIndex } from './suggest';
 
 export interface Product {
   id: number;
@@ -20,6 +21,8 @@ export interface Product {
   unitPrice: number | null;
   unit: PackUnit | null;
   packs: Pack[];
+  /** True for a generic-name match with no brand chosen (id is the negative generic id; no price, form or strength). */
+  genericOnly?: boolean;
 }
 
 export interface DataInfo {
@@ -85,6 +88,8 @@ function brandKeys(db: Database.Database): string[] {
 
 export interface BrandMatch {
   brand: string;
+  /** Set when this group is a generic name (one generic-only product), not a brand. */
+  genericOnly?: boolean;
   /** 0 = exact; higher = weaker match. */
   score: number;
   products: Product[];
@@ -147,4 +152,77 @@ export function getDataInfo(db: Database.Database): DataInfo {
     licence: meta.get('licence') ?? '',
     lastUpdated: meta.get('data_last_updated') ?? '',
   };
+}
+
+// ---------- names for autocomplete and OCR matching (no AI key needed) ----------
+
+const nameIndexCache = new WeakMap<Database.Database, NameIndex>();
+
+/** Brand and generic names, indexed once per database. */
+export function nameIndex(db: Database.Database): NameIndex {
+  let index = nameIndexCache.get(db);
+  if (!index) {
+    const brands = db
+      .prepare(
+        `SELECT MIN(p.brand) AS name, MIN(g.name) AS generic
+         FROM products p LEFT JOIN generics g ON g.id = p.generic_id
+         GROUP BY p.brand_key`,
+      )
+      .all() as { name: string; generic: string | null }[];
+    const generics = db.prepare('SELECT id, name FROM generics').all() as { id: number; name: string }[];
+    index = buildNameIndex([
+      ...brands.map((b): NameEntry => ({ name: b.name, kind: 'brand', generic: b.generic })),
+      ...generics.map((g): NameEntry => ({ name: g.name, kind: 'generic', generic: g.name, genericId: g.id })),
+    ]);
+    nameIndexCache.set(db, index);
+  }
+  return index;
+}
+
+/** A generic-name match with no brand: the line can still be checked for duplicates and interactions. */
+export function genericOnlyProduct(db: Database.Database, genericId: number): Product | null {
+  const g = db.prepare('SELECT id, name, indication, drug_class, pregnancy_category FROM generics WHERE id = ?').get(genericId) as
+    | { id: number; name: string; indication: string | null; drug_class: string | null; pregnancy_category: string | null }
+    | undefined;
+  if (!g) return null;
+  return {
+    id: -g.id,
+    brand: g.name,
+    generic: g.name,
+    indication: g.indication,
+    drugClass: g.drug_class,
+    pregnancyCategory: g.pregnancy_category ?? null,
+    manufacturer: null,
+    form: '',
+    strength: '',
+    unitPrice: null,
+    unit: null,
+    packs: [],
+    genericOnly: true,
+  };
+}
+
+/** Highest suggestion score at which a generic name is offered next to brands (exact, prefix or one typo). */
+const GENERIC_GROUP_MAX_SCORE = 3;
+
+/** Brand search plus generic names ("metformin" → Metformin Hydrochloride); a generic typed exactly comes first. */
+export function searchBrandsAndGenerics(db: Database.Database, query: string): BrandMatch[] {
+  const brands = searchBrands(db, query);
+  if (hasBangla(query)) {
+    // Bangla typed: use the phonetic suggestions to find the brand(s) first.
+    const named = suggestNames(query, nameIndex(db), 3).filter((s) => s.kind === 'brand');
+    for (const s of named) if (!brands.some((b) => b.brand === s.name)) brands.push(...searchBrands(db, s.name, 1).map((b) => ({ ...b, score: s.score })));
+    brands.sort((a, b) => a.score - b.score);
+  }
+  const generics = suggestNames(query, nameIndex(db), 4)
+    .filter((s) => s.kind === 'generic' && s.genericId !== undefined && s.score <= GENERIC_GROUP_MAX_SCORE)
+    .slice(0, 2)
+    .flatMap((s): BrandMatch[] => {
+      const p = genericOnlyProduct(db, s.genericId!);
+      return p ? [{ brand: s.name, score: s.score, products: [p], genericOnly: true }] : [];
+    });
+  if (!generics.length) return brands;
+  const best = brands[0]?.score ?? Infinity;
+  const first = generics.filter((g) => g.score <= best);
+  return [...first, ...brands, ...generics.filter((g) => g.score > best)];
 }
