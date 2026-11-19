@@ -6,7 +6,7 @@ import Icon, { type IconName } from '@/components/Icon';
 import Notice from '@/components/Notice';
 import { controlLevel } from '@/lib/rules/meal-signal';
 import type { GlucoseUnit } from '@/lib/rules/glucose';
-import { trialDaysLeft, trialEnded } from '@/lib/diabetes/trial';
+import { tabLocked, trialDaysLeft, trialEnded, type DiabetesTab } from '@/lib/diabetes/trial';
 import type { DiabetesProfile, Meal } from '@/lib/store/db';
 import { activePersonId, getDiabetesProfile, pendingTwoHour } from '@/lib/store/diabetes';
 import { getSettings } from '@/lib/store/settings';
@@ -20,7 +20,7 @@ import MedicinesPanel from './care/MedicinesPanel';
 import MorePanel from './care/MorePanel';
 import PremiumScreen from './care/PremiumScreen';
 
-type Tab = 'meal' | 'glucose' | 'patterns' | 'medicines' | 'care' | 'more';
+type Tab = DiabetesTab;
 const TABS: Array<{ id: Tab; icon: IconName }> = [
   { id: 'meal', icon: 'plate' },
   { id: 'glucose', icon: 'drop' },
@@ -29,8 +29,6 @@ const TABS: Array<{ id: Tab; icon: IconName }> = [
   { id: 'care', icon: 'calendar' },
   { id: 'more', icon: 'users' },
 ];
-/** Blood sugar entry and low-sugar help stay free after the trial (rule 11). */
-const FREE_TABS: readonly Tab[] = ['glucose'];
 
 /** Diabetes Companion: onboarding once, then meals, sugar readings and personal patterns. All data on the phone. */
 export default function DiabetesApp() {
@@ -99,7 +97,7 @@ export default function DiabetesApp() {
 
   const level = controlLevel({ fastingMmol: profile.fastingMmol, hba1c: profile.hba1c });
   const days = trialDaysLeft(trialStart);
-  const locked = trialEnded(trialStart) && !FREE_TABS.includes(tab);
+  const locked = tabLocked(tab, trialStart); // plate signal, sugar entry and low-sugar help stay free
   return (
     <div className="space-y-4" data-testid="diabetes-app">
       <div className="flex flex-wrap items-center justify-between gap-2">

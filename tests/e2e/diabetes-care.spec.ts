@@ -134,7 +134,7 @@ test('family mode: a second person with separate data; weekly summary shared as 
   await expect(page.getByTestId('glucose-recent')).toBeVisible();
 });
 
-test('trial over: Premium screen (stub) with coming-soon features; sugar entry and low-sugar help stay free', async ({ page }) => {
+test('trial over: plate signal, sugar entry and low-sugar help stay free; other tabs show Premium (not available) → Family Plan', async ({ page }) => {
   await onboardDemo(page);
   await page.evaluate(
     (start) =>
@@ -152,16 +152,28 @@ test('trial over: Premium screen (stub) with coming-soon features; sugar entry a
   );
   await page.reload();
   await expect(page.getByTestId('trial-left')).toHaveText('Free trial: 0 days left');
+  // The plate signal stays free for now.
+  await expect(page.getByTestId('meal-check')).toBeVisible();
+  await expect(page.getByTestId('premium-screen')).toHaveCount(0);
+
+  await tab(page, 'patterns');
   await expect(page.getByTestId('premium-screen')).toBeVisible();
   await expect(page.getByTestId('trial-ended')).toBeVisible();
   await expect(page.getByTestId('premium-soon')).toContainText('Ramadan mode');
-  await expect(page.getByTestId('premium-soon')).toContainText('Voice guidance in Bangla');
   await expect(page.getByTestId('premium-soon')).toContainText('Online doctor consultation');
+  await expect(page.getByTestId('premium-coming-soon')).toBeDisabled();
+  await expect(page.getByTestId('premium-coming-soon')).toHaveText('Coming soon');
+
   await tab(page, 'glucose');
   await page.getByTestId('glucose-value').fill('3.1');
   await page.getByTestId('glucose-save').click();
   await expect(page.getByTestId('low-glucose-alert')).toBeVisible();
-  await expect(page.getByTestId('emergency-button')).toBeVisible();
+  await expect(page.getByTestId('emergency-button').first()).toBeVisible();
+
+  await tab(page, 'more');
+  await page.getByTestId('premium-family-link').click();
+  await expect(page).toHaveURL(/\/en\/family$/);
+  await expect(page.getByTestId('family-headline')).toHaveText("Stay close to your parents' health, even from far away.");
 });
 
 test('medicine reminder appears at the dose time (in-app banner when notifications are off)', async ({ page }) => {

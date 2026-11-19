@@ -442,23 +442,16 @@
     "premium": {
       "title": "Nirapod Premium",
       "trialEnded": "Your 7-week free trial of the Diabetes Companion has ended.",
-      "intro": "Premium keeps the full Diabetes Companion. All your data stays on this phone.",
-      "features": {
-        "meals": "Meal photo check with green / amber / red signals",
-        "learning": "Personal food patterns from your 2-hour readings",
-        "reminders": "Meal, walk, medicine and check-up reminders",
-        "log": "Weekly and monthly blood sugar charts",
-        "report": "Printable doctor visit report",
-        "family": "Family mode and weekly summary sharing"
-      },
+      "intro": "Premium is not available yet. Our main Premium idea is the Family Plan.",
       "soon": "Coming soon",
       "soonList": {
         "ramadan": "Ramadan mode",
         "voice": "Voice guidance in Bangla",
         "doctor": "Online doctor consultation"
       },
-      "subscribe": "Subscribe (coming soon)",
-      "free": "Blood sugar readings, low-sugar help and Emergency stay free."
+      "subscribe": "Coming soon",
+      "free": "The plate signal, blood sugar readings, low-sugar help and Emergency stay free.",
+      "family": "See the Family Plan preview"
     }
   },
   "skin": {
@@ -768,9 +761,157 @@
         "photos": "Photos stay on your phone: skin photos are never uploaded, and the top of a prescription (name, phone) is cut off before reading.",
         "emergency": "Emergency help is always free and one tap away."
       }
-    }
+    },
+    "familyTitle": "Family Plan (Premium idea)",
+    "family": "For children who live away from their parents: daily check-ins, reminders in their own voice, refill and emergency alerts. It is a preview and not live yet; sharing will be opt-in by the parent and end-to-end encrypted.",
+    "familyLink": "See the Family Plan preview"
   },
   "common": {
     "comingSoon": "Coming soon"
+  },
+  "family": {
+    "title": "Family Plan",
+    "premium": "Premium · preview",
+    "headline": "Stay close to your parents' health, even from far away.",
+    "intro": "Our main Premium idea, for children who live away from their parents. This page shows what we are building. Nothing on it works yet: no sharing, no sync and no payment.",
+    "featuresTitle": "What the Family Plan will do",
+    "status": {
+      "progress": "In progress",
+      "soon": "Coming soon"
+    },
+    "open": "See preview",
+    "features": {
+      "checkin": {
+        "title": "“I'm fine today” check-in",
+        "desc": "The parent taps one big button each morning; the child sees a green tick, or a gentle alert if there is no check-in by a chosen time."
+      },
+      "voice": {
+        "title": "Reminders in your own voice",
+        "desc": "The child records “Amma, time for your medicine”, and the reminder plays that voice."
+      },
+      "remote": {
+        "title": "Remote setup and simple mode",
+        "desc": "The child sets up medicines and reminders from their own phone; parents get large buttons, large text and read-aloud."
+      },
+      "refill": {
+        "title": "Medicine refill alerts",
+        "desc": "The app tracks how much medicine is left and alerts the child 5 days before it runs out, with pharmacy ordering paid from abroad."
+      },
+      "emergency": {
+        "title": "Emergency alerts to family",
+        "desc": "When the parent calls 999 or has low sugar, family members get an instant alert with location and nearby hospitals."
+      },
+      "plate": {
+        "title": "Plate sharing with encouragement",
+        "desc": "The child sees the parent's meal signal and sends a one-tap note of encouragement."
+      },
+      "visit": {
+        "title": "After-visit summary",
+        "desc": "When a new prescription is scanned, the child sees what changed (added or removed medicines), with no advice."
+      },
+      "story": {
+        "title": "Monthly health story",
+        "desc": "A simple monthly summary for the child (doses taken, green plates, low readings), with a short note from a nutritionist."
+      }
+    },
+    "preview": {
+      "label": "Preview — sample, not live yet",
+      "parent": "Parent's phone",
+      "child": "Child's phone",
+      "close": "Close preview",
+      "note": "Sample data drawn for this preview. Nothing is sent, shared or saved."
+    },
+    "sample": {
+      "parentName": "Amma",
+      "childName": "Rafi",
+      "checkin": {
+        "button": "I'm fine today",
+        "done": "Thank you, Amma. Rafi will see it.",
+        "amma": "Amma checked in at 8:12 am",
+        "abba": "Abba: no check-in yet (chosen time 10:00 am)",
+        "gentle": "Maybe give a call."
+      },
+      "voice": {
+        "record": "Recording your voice",
+        "phrase": "“Amma, time for your medicine”",
+        "length": "0:04",
+        "save": "Use for 8:00 pm reminder",
+        "reminder": "8:00 pm · Metformin 500 mg",
+        "from": "Voice from Rafi",
+        "play": "Play"
+      },
+      "remote": {
+        "setting": "Setting up for Amma",
+        "line": "Metformin 500 mg · 1+0+1 · after meals",
+        "asWritten": "As written on the prescription",
+        "addReminder": "Add reminder",
+        "next": "Next medicine",
+        "nextLine": "Metformin · 8:00 pm",
+        "taken": "Taken",
+        "readAloud": "Read aloud"
+      },
+      "refill": {
+        "left": "Metformin: about 5 days left",
+        "order": "Order from a pharmacy",
+        "notYet": "Payment not available yet",
+        "parent": "Your medicine is running low. Rafi has been told."
+      },
+      "emergency": {
+        "calling": "Calling 999…",
+        "low": "Low sugar: 3.2 mmol/L",
+        "lowHelp": "Take something sweet now.",
+        "alert": "Amma called 999 at 9:41 pm",
+        "where": "Near Mirpur 10, Dhaka",
+        "hospitals": "Nearby hospitals: 3 within 2 km",
+        "call": "Call Amma"
+      },
+      "plate": {
+        "meal": "Lunch: rice, dal, vegetables",
+        "green": "Green",
+        "child": "Amma's lunch",
+        "cheer1": "Well done, Amma!",
+        "cheer2": "Proud of you",
+        "sent": "One tap sends a note"
+      },
+      "visit": {
+        "new": "New prescription scanned · 12 Nov",
+        "added": "Added",
+        "addedLine": "Amlodipine 5 mg",
+        "removed": "Removed",
+        "removedLine": "Losartan 50 mg",
+        "same": "Unchanged: Metformin 500 mg",
+        "ask": "Questions? Ask the doctor or pharmacist.",
+        "parent": "Prescription confirmed and saved. Rafi will see what changed."
+      },
+      "story": {
+        "month": "Amma's October",
+        "doses": "Doses taken",
+        "dosesValue": "54 of 60",
+        "plates": "Green plates",
+        "platesValue": "18",
+        "lows": "Low readings",
+        "lowsValue": "1",
+        "nutritionist": "Note from a nutritionist",
+        "nutritionistNote": "More vegetables at dinner this month. Keep it up!",
+        "parent": "Your month: 18 green plates. Rafi sends love."
+      }
+    },
+    "privacy": {
+      "title": "Privacy",
+      "body": "Family sharing will be opt-in by the parent and end-to-end encrypted. Free users' data never leaves the phone. Skin photos are never shared."
+    },
+    "price": {
+      "line": "Planned price: about BDT 99–149 per month",
+      "notYet": "Not available yet",
+      "button": "Coming soon"
+    },
+    "free": "Skin screening, Medicine Safety and Emergency are free. In the Diabetes Companion, the plate signal, blood sugar entry and low-sugar help stay free after the trial.",
+    "homeCard": {
+      "title": "Family Plan",
+      "desc": "For children who live away from their parents — Family Plan, coming soon",
+      "badge": "Coming soon"
+    },
+    "moreLink": "Family Plan (preview)",
+    "moreDesc": "Our main Premium idea: help your parents from far away. Not live yet."
   }
 }
