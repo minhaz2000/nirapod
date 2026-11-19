@@ -9,13 +9,13 @@ import { weeklySummaryText, type SummaryT } from '@/lib/care/report';
 import { formatGlucose, type GlucoseUnit } from '@/lib/rules/glucose';
 import { ME, type Profile } from '@/lib/store/db';
 import { addPerson, listPeople, setActivePerson } from '@/lib/store/care';
-import PremiumScreen from './PremiumScreen';
 
-/** Doctor report, family mode, weekly summary sharing (text only) and the Premium screen. */
+/** Doctor report, family mode, weekly summary sharing (text only) and the Family Plan preview link. */
 export default function MorePanel({ personId, unit, onPerson }: { personId: string; unit: GlucoseUnit; onPerson: (id: string) => void }) {
   const t = useTranslations('diabetes.more');
   const tSummary = useTranslations('diabetes.summary') as unknown as SummaryT;
   const ts = useTranslations('settings');
+  const tf = useTranslations('family');
   const [people, setPeople] = useState<Profile[]>([]);
   const [name, setName] = useState('');
   const [relation, setRelation] = useState('');
@@ -132,7 +132,17 @@ export default function MorePanel({ personId, unit, onPerson }: { personId: stri
         </details>
       </div>
 
-      <PremiumScreen ended={false} />
+      <Link
+        href="/family"
+        data-testid="more-family-link"
+        className="flex min-h-16 items-center gap-3 rounded-2xl border-2 border-teal-800 bg-white p-4 shadow-sm hover:bg-teal-50"
+      >
+        <Icon name="users" size={28} className="shrink-0 text-teal-900" />
+        <span className="min-w-0 flex-1">
+          <span className="block font-bold text-teal-900">{tf('moreLink')}</span>
+          <span className="block text-sm text-slate-700">{tf('moreDesc')}</span>
+        </span>
+      </Link>
     </section>
   );
 }

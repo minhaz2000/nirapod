@@ -16,6 +16,7 @@ export default function HomePage({ params }: { params: Promise<{ locale: string 
   const { locale } = use(params);
   setRequestLocale(locale);
   const t = useTranslations('home');
+  const tf = useTranslations('family');
 
   return (
     <div className="space-y-6">
@@ -42,6 +43,19 @@ export default function HomePage({ params }: { params: Promise<{ locale: string 
           ))}
         </ul>
       </section>
+
+      <Link
+        href="/family"
+        data-testid="home-family-card"
+        className="flex min-h-16 items-center gap-3 rounded-2xl border-2 border-dashed border-teal-700 bg-white p-4 hover:shadow-md"
+      >
+        <Icon name="users" size={28} className="shrink-0 text-teal-900" />
+        <span className="min-w-0 flex-1">
+          <span className="block font-bold">{tf('homeCard.title')}</span>
+          <span className="block text-sm text-slate-700">{tf('homeCard.desc')}</span>
+        </span>
+        <span className="shrink-0 rounded-full bg-slate-200 px-2 py-0.5 text-xs font-semibold">{tf('homeCard.badge')}</span>
+      </Link>
     </div>
   );
 }
