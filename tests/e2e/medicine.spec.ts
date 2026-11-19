@@ -1,13 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
+import { setDemoMode } from './helpers';
 
 // Needs data/build/medicines.sqlite (npm run build:data) and a production build.
 
-async function enableDemoMode(page: Page) {
-  await page.goto('/en/settings');
-  await expect(page.locator('[data-ready="true"]')).toBeVisible();
-  await page.getByTestId('demo-mode').check();
-  await expect(page.getByTestId('demo-mode')).toBeChecked();
-}
+const enableDemoMode = setDemoMode;
 
 async function scanSample(page: Page, sample: 'demoOk' | 'demoCheck', locale = 'en') {
   await enableDemoMode(page);
@@ -88,7 +84,7 @@ test('typed brand search works without a photo (Bangla)', async ({ page }) => {
 
 test('a poor photo gets a quality warning before OCR', async ({ page }) => {
   await page.goto('/en/medicine');
-  await page.getByTestId('scan-pack').locator('input[type=file]').setInputFiles('public/icons/icon-192.png');
+  await page.getByTestId('scan-pack').getByTestId('gallery-input').setInputFiles('public/icons/icon-192.png');
   await expect(page.getByTestId('quality-issues')).toContainText('too small');
   await page.getByRole('button', { name: 'Retake photo' }).click();
   await expect(page.getByTestId('scan-pack')).toHaveAttribute('data-step', 'idle');

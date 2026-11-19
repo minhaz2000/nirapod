@@ -50,10 +50,12 @@ export default function ScanPack() {
     setStep({ k: 'error', error: err instanceof MedicineApiFailure ? err.kind : 'generic' });
 
   async function startFromBlob(blob: Blob) {
+    // A photo the browser cannot open throws PhotoError before the step changes, so CameraCapture (still on screen)
+    // can show the JPG / PNG message.
+    const { decodeImage, checkQuality } = await import('@/lib/ocr/canvas');
+    const bitmap = await decodeImage(blob);
     setStep({ k: 'checking' });
     try {
-      const { decodeImage, checkQuality } = await import('@/lib/ocr/canvas');
-      const bitmap = await decodeImage(blob);
       const report = checkQuality(bitmap);
       if (!report.ok) return setStep({ k: 'quality', bitmap, issues: report.issues });
       await read(bitmap);

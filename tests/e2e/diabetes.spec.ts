@@ -20,7 +20,7 @@ test('onboarding: proof photo required, then control level from fasting + HbA1c'
   await page.getByTestId('onboarding-fasting').fill('9.5');
   await page.getByTestId('onboarding-start').click();
   await expect(page.getByTestId('onboarding-error')).toContainText('photo of your prescription');
-  await page.getByTestId('diabetes-onboarding').locator('input[type=file]').setInputFiles('public/samples/prescription.png');
+  await page.getByTestId('diabetes-onboarding').getByTestId('gallery-input').setInputFiles('public/samples/prescription.png');
   await expect(page.getByTestId('proof-saved')).toBeVisible();
   await page.getByTestId('onboarding-hba1c').fill('8.6');
   await page.getByTestId('onboarding-start').click();
@@ -61,7 +61,7 @@ test('rule 6: a low reading shows emergency guidance and links to Part 4 (mmol/L
 test('rule 6 at onboarding too (65 mg/dL)', async ({ page }) => {
   await setDemoMode(page);
   await page.goto('/en/diabetes');
-  await page.getByTestId('diabetes-onboarding').locator('input[type=file]').setInputFiles('public/samples/prescription.png');
+  await page.getByTestId('diabetes-onboarding').getByTestId('gallery-input').setInputFiles('public/samples/prescription.png');
   await page.getByText('mg/dL', { exact: true }).click();
   await page.getByTestId('onboarding-fasting').fill('65');
   await page.getByTestId('onboarding-start').click();

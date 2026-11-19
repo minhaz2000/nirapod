@@ -5,6 +5,29 @@ export async function setDemoMode(page: Page) {
   await expect(page.locator('[data-ready="true"]')).toBeVisible();
   await page.getByTestId('demo-mode').check();
   await expect(page.getByTestId('demo-mode')).toBeChecked();
+  // Wait until the setting is stored in IndexedDB (navigating straight away can lose the write under load).
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () =>
+          new Promise<boolean>((resolve) => {
+            const open = indexedDB.open('nirapod');
+            open.onsuccess = () => {
+              const db = open.result;
+              const names = Array.from(db.objectStoreNames);
+              if (!names.includes('settings')) return resolve(false);
+              const req = db.transaction('settings').objectStore('settings').getAll();
+              req.onsuccess = () => {
+                db.close();
+                resolve((req.result as { demoMode?: boolean }[]).some((r) => r.demoMode === true));
+              };
+              req.onerror = () => resolve(false);
+            };
+            open.onerror = () => resolve(false);
+          }),
+      ),
+    )
+    .toBe(true);
 }
 
 /** Completes Diabetes Companion onboarding with the demo profile (fasting 8.4 mmol/L, HbA1c 7.6 % → fair). */

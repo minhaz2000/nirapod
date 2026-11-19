@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import CameraCapture from '@/components/CameraCapture';
+import { loadPhoto, photoToJpeg } from '@/lib/image/photo';
 import Notice from '@/components/Notice';
 import { GLUCOSE_TARGETS } from '@/config/glucose-targets';
 import { PORTION } from '@/config/portion';
@@ -89,7 +90,11 @@ export default function Onboarding({ personId, unit, onUnit, demo, onDone }: Pro
       <div className="space-y-2">
         <p className="font-semibold">{t('proofTitle')}</p>
         <p className="text-sm text-slate-700">{t('proofHint')}</p>
-        <CameraCapture label={t('proofTitle')} onCapture={(f) => setProof(f)} />
+        <CameraCapture label={t('proofTitle')} onCapture={async (f) => {
+            const photo = await loadPhoto(f); // throws PhotoError → CameraCapture shows the message
+            setProof(await photoToJpeg(photo));
+            photo.bitmap.close();
+          }} />
         {proof && (
           <p className="text-sm text-green-800" data-testid="proof-saved">
             {t('proofSaved')}

@@ -120,12 +120,20 @@
     }
   },
   "camera": {
-    "take": "Take or choose a photo",
     "selected": "Photo selected: {name}",
     "livePreview": "Live camera preview",
     "startPreview": "Start live camera",
     "stopPreview": "Stop camera",
-    "previewUnavailable": "Live preview is not available on this device. Use the button above instead."
+    "previewUnavailable": "Live preview is not available on this device. Use the buttons above instead.",
+    "takePhoto": "Take photo",
+    "gallery": "Choose from gallery",
+    "dropHint": "Or drag an image here, or paste it (Ctrl+V)",
+    "dropZone": "Photo drop area",
+    "unsupported": "This photo cannot be opened here (for example HEIC). Please choose a JPG or PNG photo.",
+    "notImage": "This file is not a photo. Please choose a JPG or PNG photo.",
+    "tooLarge": "This file is too large. Please choose a smaller photo (JPG or PNG).",
+    "empty": "This file is empty. Please choose a JPG or PNG photo.",
+    "checking": "Opening photo…"
   },
   "model": {
     "notLoaded": "Model not loaded yet. This feature will work once the model is added.",
