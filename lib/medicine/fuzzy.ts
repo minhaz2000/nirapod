@@ -52,13 +52,14 @@ export function rankKeys(query: string, keys: readonly string[], limit = 10): Ra
     if (key === query) score = 0;
     else if (query.length >= 2 && key.startsWith(query)) score = 1.5 + Math.min(1.5, (key.length - query.length) * 0.25);
     else {
-      const d = editDistance(query, key);
+      // The distance is at least the length difference: skip the full computation when it cannot be a typo.
+      const d = Math.abs(query.length - key.length) <= allowed ? editDistance(query, key) : Infinity;
       if (d <= allowed) score = 1 + d;
       else if (query.length >= 4 && key.includes(query)) score = 6;
       else {
         // OCR often joins the brand to the next word ("napa500", "napaextra"): compare against the key's first word.
         const first = key.split(' ')[0]!;
-        const df = editDistance(query, first);
+        const df = Math.abs(query.length - first.length) <= allowed ? editDistance(query, first) : Infinity;
         if (first !== key && df <= allowed) score = 3 + df;
       }
     }

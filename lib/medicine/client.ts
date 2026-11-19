@@ -1,6 +1,8 @@
 /** Browser-side calls to the medicine API. Every query passes through redact() first (safety rule 9). */
 import { redact } from '@/lib/privacy/redact';
 import type { AlternativesResult, BrandMatch, DataInfo } from './repo';
+import type { Identification, PackEvidence } from './identify';
+import type { VisionPackFields } from '@/lib/ocr/pack';
 
 export type MedicineApiError = 'offline' | 'dataMissing' | 'generic';
 
@@ -81,4 +83,48 @@ export async function matchMedicineNames(names: string[]): Promise<(NameMatch | 
   if (res.status === 503) throw new MedicineApiFailure('dataMissing');
   if (!res.ok) throw new MedicineApiFailure('generic');
   return ((await res.json()) as { matches: (NameMatch | null)[] }).matches;
+}
+
+// ---------- medicine-pack identification ----------
+
+
+export type IdentifyResponse = Identification & { data: DataInfo };
+
+/** Verifies what was read against the medicine database (brand, then generic / strength / form / maker). */
+export async function identifyMedicine(evidence: PackEvidence): Promise<IdentifyResponse> {
+  let res: Response;
+  try {
+    res = await fetch('/api/medicines/identify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ evidence }),
+    });
+  } catch {
+    throw new MedicineApiFailure('offline');
+  }
+  if (res.status === 503) throw new MedicineApiFailure('dataMissing');
+  if (!res.ok) throw new MedicineApiFailure('generic');
+  return (await res.json()) as IdentifyResponse;
+}
+
+export type VisionFailure = 'not_available' | 'offline' | 'busy' | 'failed';
+
+/** Reads a pack photo with the vision model (after consent). Throws a VisionFailure string on any problem. */
+export async function readPackWithAi(image: { base64: string; mediaType: 'image/jpeg' }): Promise<VisionPackFields> {
+  let res: Response;
+  try {
+    res = await fetch('/api/pack/read', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: image.base64, mediaType: image.mediaType }),
+    });
+  } catch {
+    throw 'offline' satisfies VisionFailure;
+  }
+  if (res.status === 503) throw 'not_available' satisfies VisionFailure;
+  if (res.status === 429) throw 'busy' satisfies VisionFailure;
+  if (!res.ok) throw 'failed' satisfies VisionFailure;
+  const json = (await res.json()) as { fields?: VisionPackFields };
+  if (!json.fields) throw 'failed' satisfies VisionFailure;
+  return json.fields;
 }

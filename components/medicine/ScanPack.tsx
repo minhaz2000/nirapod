@@ -6,83 +6,157 @@ import CameraCapture from '@/components/CameraCapture';
 import Notice from '@/components/Notice';
 import type { QualityIssue } from '@/lib/ai/quality';
 import {
-  fetchAlternatives,
   MedicineApiFailure,
-  searchCandidates,
+  fetchAlternatives,
+  identifyMedicine,
+  readPackWithAi,
   searchMedicines,
   type AlternativesResponse,
+  type IdentifyResponse,
   type MedicineApiError,
 } from '@/lib/medicine/client';
+import type { ScoredCandidate } from '@/lib/medicine/identify';
 import { preselectProduct } from '@/lib/medicine/pick';
 import type { BrandMatch, Product } from '@/lib/medicine/repo';
-import { readPack, type PackReading } from '@/lib/ocr/pack';
+import { evidenceFromReading, mergeReadings, readPack, readingFromVision, type PackReading } from '@/lib/ocr/pack';
 import { getSettings } from '@/lib/store/settings';
+import ExpiryCard from './ExpiryCard';
 import PackResults from './PackResults';
 import ProductPicker from './ProductPicker';
+
+type Side = 'front' | 'back';
 
 type Step =
   | { k: 'idle' }
   | { k: 'checking' }
-  | { k: 'quality'; bitmap: ImageBitmap; issues: QualityIssue[] }
-  | { k: 'reading'; percent: number }
+  | { k: 'quality'; bitmap: ImageBitmap; issues: QualityIssue[]; side: Side }
+  | { k: 'consent'; bitmap: ImageBitmap; side: Side }
+  | { k: 'reading'; percent?: number }
   | { k: 'looking' }
+  /** Weak match: the user must choose (top candidates or type the name) before anything else is shown. */
+  | { k: 'notSure'; reading: PackReading; candidates: ScoredCandidate[] }
+  /** Not in the database: said clearly, and the expiry check is still shown. */
+  | { k: 'notFound'; reading: PackReading }
+  /** Typed search results. */
   | { k: 'confirm'; reading: PackReading | null; matches: BrandMatch[]; noMatchFor?: string }
-  | { k: 'result'; reading: PackReading | null; product: Product; alternatives: AlternativesResponse }
+  | { k: 'result'; reading: PackReading | null; product: Product; alternatives: AlternativesResponse; candidates: ScoredCandidate[] }
   | { k: 'error'; error: MedicineApiError | 'ocr' };
 
 const SAMPLES = { demoOk: '/samples/medicine-pack-ok.png', demoCheck: '/samples/medicine-pack-check.png' } as const;
 
-/** Photo → quality check → on-device OCR → user confirms brand → results. */
+/**
+ * Photo → quality check → (consent) vision model, or on-phone OCR → verified against the medicine database →
+ * strong match: the medicine; weak: the user chooses; none: "not in the database" with the expiry check.
+ * A second photo (back / side of the pack) adds the expiry date when it is printed there.
+ */
 export default function ScanPack() {
   const t = useTranslations('medicine.scan');
   const [step, setStep] = useState<Step>({ k: 'idle' });
   const [demo, setDemo] = useState(false);
+  const [ai, setAi] = useState(false);
+  const [consented, setConsented] = useState<boolean | null>(null); // null = not asked in this scan yet
   const [query, setQuery] = useState('');
   const [reading, setReading] = useState<PackReading | null>(null);
+  const [notice, setNotice] = useState<'aiFallback' | 'backAdded' | null>(null);
+  // The result a back / side photo extends (kept while that photo is read).
+  const [lastResult, setLastResult] = useState<Extract<Step, { k: 'result' }> | null>(null);
 
   useEffect(() => {
     getSettings()
       .then((s) => setDemo(s.demoMode))
       .catch(() => undefined);
+    fetch('/api/pack/read')
+      .then((r) => r.json())
+      .then((j: { available: boolean }) => setAi(Boolean(j.available)))
+      .catch(() => setAi(false));
   }, []);
 
-  const fail = (err: unknown) =>
-    setStep({ k: 'error', error: err instanceof MedicineApiFailure ? err.kind : 'generic' });
+  const fail = (err: unknown) => setStep({ k: 'error', error: err instanceof MedicineApiFailure ? err.kind : 'generic' });
 
-  async function startFromBlob(blob: Blob) {
+  async function startFromBlob(blob: Blob, side: Side = 'front') {
     // A photo the browser cannot open throws PhotoError before the step changes, so CameraCapture (still on screen)
     // can show the JPG / PNG message.
     const { decodeImage, checkQuality } = await import('@/lib/ocr/canvas');
     const bitmap = await decodeImage(blob);
     setStep({ k: 'checking' });
-    try {
-      const report = checkQuality(bitmap);
-      if (!report.ok) return setStep({ k: 'quality', bitmap, issues: report.issues });
-      await read(bitmap);
-    } catch {
-      setStep({ k: 'error', error: 'ocr' });
-    }
+    const report = checkQuality(bitmap);
+    if (!report.ok) return setStep({ k: 'quality', bitmap, issues: report.issues, side });
+    proceed(bitmap, side);
   }
 
-  async function read(bitmap: ImageBitmap) {
-    let packReading: PackReading;
+  function proceed(bitmap: ImageBitmap, side: Side) {
+    if (ai && consented === null) return setStep({ k: 'consent', bitmap, side });
+    void read(bitmap, side, ai && consented === true);
+  }
+
+  async function readOnPhone(bitmap: ImageBitmap): Promise<PackReading> {
+    setStep({ k: 'reading', percent: 0 });
+    const [{ prepareForOcr }, { recognisePrinted }] = await Promise.all([import('@/lib/ocr/canvas'), import('@/lib/ocr/tesseract')]);
+    const { canvas } = prepareForOcr(bitmap);
+    const ocr = await recognisePrinted(canvas, (p) => setStep({ k: 'reading', percent: Math.round(p * 100) }));
+    return readPack(ocr.text, ocr.words, ocr.lines);
+  }
+
+  async function read(bitmap: ImageBitmap, side: Side, useAi: boolean) {
+    let r: PackReading;
+    setNotice(null);
     try {
-      setStep({ k: 'reading', percent: 0 });
-      const [{ prepareForOcr }, { recognisePrinted }] = await Promise.all([
-        import('@/lib/ocr/canvas'),
-        import('@/lib/ocr/tesseract'),
-      ]);
-      const { canvas } = prepareForOcr(bitmap);
-      const ocr = await recognisePrinted(canvas, (p) => setStep({ k: 'reading', percent: Math.round(p * 100) }));
-      packReading = readPack(ocr.text, ocr.words);
-      setReading(packReading);
+      if (useAi) {
+        setStep({ k: 'reading' });
+        try {
+          const { bitmapToJpegBase64 } = await import('@/lib/image/photo');
+          r = readingFromVision(await readPackWithAi(await bitmapToJpegBase64(bitmap)));
+        } catch {
+          // No key, no internet or a failed answer: read the pack on the phone instead.
+          setNotice('aiFallback');
+          r = await readOnPhone(bitmap);
+        }
+      } else {
+        r = await readOnPhone(bitmap);
+      }
     } catch {
       return setStep({ k: 'error', error: 'ocr' });
     }
+    if (side === 'back' && reading) return addBack(r);
+    setReading(r);
+    await identify(r);
+  }
+
+  async function identify(r: PackReading) {
     try {
       setStep({ k: 'looking' });
-      const matches = packReading.brandCandidates.length ? await searchCandidates(packReading.brandCandidates) : [];
-      setStep({ k: 'confirm', reading: packReading, matches });
+      const id: IdentifyResponse = await identifyMedicine(evidenceFromReading(r));
+      // The matching log explains every decision (what was read, each candidate's checks, why the best won).
+      console.info('[nirapod] pack identification\n' + id.log.join('\n'));
+      if (id.verdict === 'strong' && id.best) return show(r, id.best.product, id.candidates);
+      if (id.verdict === 'weak' && id.candidates.length) return setStep({ k: 'notSure', reading: r, candidates: id.candidates });
+      setStep({ k: 'notFound', reading: r });
+    } catch (err) {
+      fail(err);
+    }
+  }
+
+  /** Back / side of the pack: merge, keep the chosen medicine, or identify again if it was not known yet. */
+  async function addBack(back: PackReading) {
+    const merged = reading ? mergeReadings(reading, back) : back;
+    setReading(merged);
+    setNotice('backAdded');
+    if (lastResult) {
+      // The medicine is already known (matched or chosen): the back adds dates, batch and DAR number.
+      const next = { ...lastResult, reading: merged };
+      setLastResult(next);
+      return setStep(next);
+    }
+    await identify(merged);
+  }
+
+  async function show(r: PackReading | null, product: Product, candidates: ScoredCandidate[] = []) {
+    try {
+      setStep({ k: 'looking' });
+      const alternatives = await fetchAlternatives(product.id);
+      const next = { k: 'result' as const, reading: r, product, alternatives, candidates };
+      setLastResult(next);
+      setStep(next);
     } catch (err) {
       fail(err);
     }
@@ -95,17 +169,8 @@ export default function ScanPack() {
     try {
       setStep({ k: 'looking' });
       const { results } = await searchMedicines(q);
-      setStep({ k: 'confirm', reading, matches: results, noMatchFor: results.length ? undefined : q });
-    } catch (err) {
-      fail(err);
-    }
-  }
-
-  async function onConfirm(product: Product) {
-    try {
-      setStep({ k: 'looking' });
-      const alternatives = await fetchAlternatives(product.id);
-      setStep({ k: 'result', reading, product, alternatives });
+      const brands = results.filter((b) => !b.genericOnly);
+      setStep({ k: 'confirm', reading, matches: brands, noMatchFor: brands.length ? undefined : q });
     } catch (err) {
       fail(err);
     }
@@ -114,6 +179,9 @@ export default function ScanPack() {
   function restart() {
     setReading(null);
     setQuery('');
+    setConsented(null);
+    setNotice(null);
+    setLastResult(null);
     setStep({ k: 'idle' });
   }
 
@@ -150,16 +218,45 @@ export default function ScanPack() {
     </div>
   );
 
+  const backPhoto = (
+    <div className="space-y-2 rounded-2xl border-2 border-dashed border-teal-700 bg-white p-3" data-testid="add-back">
+      <p className="text-sm text-slate-700">{t('back.hint')}</p>
+      <CameraCapture label={t('back.add')} onCapture={(f) => startFromBlob(f, 'back')} />
+    </div>
+  );
+
+  const readAs = (r: PackReading | null) =>
+    r && r.brandCandidates.length > 0 ? (
+      <p className="text-slate-800" data-testid="read-as">
+        {t('confirm.readAs', { words: r.brandCandidates.slice(0, 3).join(', ') })}
+      </p>
+    ) : null;
+
+  const candidateLabel = (p: Product) => (
+    <>
+      <span className="block font-bold">
+        {p.brand} {p.strength} · {p.form}
+      </span>
+      <span className="block text-sm text-slate-700">{[p.generic, p.manufacturer].filter(Boolean).join(' · ')}</span>
+    </>
+  );
+
   return (
     <section className="space-y-4" aria-labelledby="scan-title" data-testid="scan-pack" data-step={step.k}>
       <h2 id="scan-title" className="text-xl font-bold">
         {t('title')}
       </h2>
 
+      {notice && (
+        <div data-testid={`scan-notice-${notice}`}>
+          <Notice tone={notice === 'aiFallback' ? 'warning' : 'info'}>{notice === 'aiFallback' ? t('aiFallback') : t('back.added')}</Notice>
+        </div>
+      )}
+
       {step.k === 'idle' && (
         <div className="space-y-4">
           <p>{t('hint')}</p>
-          <CameraCapture label={t('takePhoto')} onCapture={startFromBlob} />
+          <CameraCapture label={t('takePhoto')} onCapture={(f) => startFromBlob(f)} />
           <p className="text-sm text-slate-700">{t('privacy')}</p>
           {demo && (
             <div className="space-y-2 rounded-2xl border-2 border-dashed border-teal-700 p-3" data-testid="demo-samples">
@@ -184,8 +281,8 @@ export default function ScanPack() {
       )}
 
       {step.k === 'checking' && busy(t('steps.checking'))}
-      {step.k === 'reading' && busy(t('steps.reading', { percent: step.percent }), step.percent)}
-      {step.k === 'looking' && busy(t('steps.looking'))}
+      {step.k === 'reading' && busy(step.percent === undefined ? t('steps.readingAi') : t('steps.reading', { percent: step.percent }), step.percent)}
+      {step.k === 'looking' && busy(t('steps.identifying'))}
 
       {step.k === 'quality' && (
         <div className="space-y-3" data-testid="quality-issues">
@@ -203,7 +300,7 @@ export default function ScanPack() {
             </button>
             <button
               type="button"
-              onClick={() => read(step.bitmap)}
+              onClick={() => proceed(step.bitmap, step.side)}
               className="min-h-12 flex-1 rounded-xl border-2 border-teal-800 px-3 font-bold text-teal-900"
             >
               {t('quality.continue')}
@@ -212,24 +309,91 @@ export default function ScanPack() {
         </div>
       )}
 
+      {step.k === 'consent' && (
+        <div role="alertdialog" aria-labelledby="pack-consent-text" className="space-y-3 rounded-2xl border-2 border-amber-600 bg-amber-50 p-4" data-testid="pack-consent">
+          <p id="pack-consent-text" className="font-semibold text-amber-950">
+            {t('consent')}
+          </p>
+          <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-2">
+            <button
+              type="button"
+              data-testid="pack-consent-continue"
+              onClick={() => {
+                setConsented(true);
+                void read(step.bitmap, step.side, true);
+              }}
+              className="min-h-12 rounded-xl bg-teal-800 px-3 font-bold text-white"
+            >
+              {t('consentContinue')}
+            </button>
+            <button
+              type="button"
+              data-testid="pack-consent-local"
+              onClick={() => {
+                setConsented(false);
+                void read(step.bitmap, step.side, false);
+              }}
+              className="min-h-12 rounded-xl border-2 border-teal-800 px-3 font-bold text-teal-900"
+            >
+              {t('consentLocal')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {step.k === 'notSure' && (
+        <div className="space-y-3" data-testid="not-sure">
+          <Notice tone="warning">
+            <p className="text-lg font-bold">{t('notSure.title')}</p>
+            <p>{t('notSure.hint')}</p>
+          </Notice>
+          {readAs(step.reading)}
+          <ul className="space-y-2">
+            {step.candidates.map((c) => (
+              <li key={c.product.id}>
+                <button
+                  type="button"
+                  data-testid="candidate"
+                  data-brand={c.product.brand}
+                  onClick={() => show(step.reading, c.product, step.candidates)}
+                  className="flex min-h-14 w-full flex-col items-start rounded-xl border-2 border-slate-300 bg-white p-3 text-left hover:border-teal-800"
+                >
+                  {candidateLabel(c.product)}
+                </button>
+              </li>
+            ))}
+          </ul>
+          {searchForm(t('notSure.typeName'))}
+        </div>
+      )}
+
+      {step.k === 'notFound' && (
+        <div className="space-y-3" data-testid="not-found">
+          <Notice tone="warning">
+            <p className="text-lg font-bold">{t('notFound.title')}</p>
+            <p>{t('notFound.hint')}</p>
+          </Notice>
+          {readAs(step.reading)}
+          <ExpiryCard dates={step.reading.dates} />
+          {backPhoto}
+          {searchForm(t('notSure.typeName'))}
+          <button type="button" onClick={restart} className="min-h-12 w-full rounded-xl border-2 border-teal-800 px-4 font-bold text-teal-900">
+            {t('result.scanAnother')}
+          </button>
+        </div>
+      )}
+
       {step.k === 'confirm' && (
         <div className="space-y-4" data-testid="confirm-step">
           <h3 className="text-lg font-bold">{t('confirm.title')}</h3>
-          {step.reading &&
-            (step.reading.brandCandidates.length ? (
-              <p className="text-slate-800" data-testid="read-as">
-                {t('confirm.readAs', { words: step.reading.brandCandidates.slice(0, 3).join(', ') })}
-              </p>
-            ) : (
-              <p>{t('confirm.nothingRead')}</p>
-            ))}
+          {readAs(step.reading)}
           {step.noMatchFor && <Notice tone="warning">{t('confirm.noMatch', { query: step.noMatchFor })}</Notice>}
           {step.matches.length > 0 && (
             <ProductPicker
               key={step.matches.map((m) => m.brand).join('|')}
               matches={step.matches}
               initial={preselectProduct(step.matches, step.reading?.text ?? '')}
-              onConfirm={onConfirm}
+              onConfirm={(p) => show(step.reading, p)}
             />
           )}
           {searchForm(t('confirm.notListed'))}
@@ -237,7 +401,32 @@ export default function ScanPack() {
       )}
 
       {step.k === 'result' && (
-        <PackResults product={step.product} reading={step.reading} alternatives={step.alternatives} onRestart={restart} />
+        <div className="space-y-4">
+          {readAs(step.reading)}
+          <PackResults product={step.product} reading={step.reading} alternatives={step.alternatives} onRestart={restart} />
+          {step.reading && backPhoto}
+          {step.candidates.length > 1 && (
+            <details className="rounded-2xl bg-white p-3 shadow-sm" data-testid="change-medicine">
+              <summary className="min-h-11 cursor-pointer content-center font-semibold text-teal-900">{t('change')}</summary>
+              <ul className="mt-2 space-y-2">
+                {step.candidates
+                  .filter((c) => c.product.id !== step.product.id)
+                  .map((c) => (
+                    <li key={c.product.id}>
+                      <button
+                        type="button"
+                        onClick={() => show(step.reading, c.product, step.candidates)}
+                        className="flex min-h-14 w-full flex-col items-start rounded-xl border-2 border-slate-300 p-3 text-left"
+                      >
+                        {candidateLabel(c.product)}
+                      </button>
+                    </li>
+                  ))}
+              </ul>
+              <div className="mt-2">{searchForm(t('notSure.typeName'))}</div>
+            </details>
+          )}
+        </div>
       )}
 
       {step.k === 'error' && (

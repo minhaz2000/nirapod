@@ -131,3 +131,15 @@ export async function photoToJpeg(photo: LoadedPhoto, quality = 0.85): Promise<B
   canvas.getContext('2d')!.drawImage(photo.bitmap, 0, 0);
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new PhotoError('unsupported'))), 'image/jpeg', quality));
 }
+
+/** JPEG base64 (no data: prefix) of a bitmap, longest side at most maxSide — for the vision model. */
+export async function bitmapToJpegBase64(bitmap: ImageBitmap, maxSide = PHOTO_MAX_SIDE, quality = 0.85): Promise<{ base64: string; mediaType: 'image/jpeg' }> {
+  const fit = fitWithin(bitmap.width, bitmap.height, maxSide);
+  const canvas = toCanvas(fit.width, fit.height);
+  canvas.getContext('2d')!.drawImage(bitmap, 0, 0, fit.width, fit.height);
+  const blob: Blob = await new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new PhotoError('unsupported'))), 'image/jpeg', quality));
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return { base64: btoa(binary), mediaType: 'image/jpeg' };
+}

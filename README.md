@@ -68,6 +68,15 @@ the prescription header is cropped and text is redacted before sending, the user
 photo is sent, every line read is confirmed by the user (rule 7), and `/api/explain` output that adds any medicine,
 number, dose advice or diagnosis is replaced by the template (rule 8).
 
+**Medicine packs** (`/api/pack/read`, then `/api/medicines/identify`): after a consent note, the pack photo is read
+by the same provider (JSON only: brand, generic, strength, form, manufacturer, expiry and manufacturing dates, batch,
+DAR number and the exact text seen). Without a key or internet, the pack is read on the phone with tesseract.js.
+Either way the answer is verified against the medicine database (`lib/medicine/identify.ts`): brand first (two-word
+brands such as "No Pain" are also matched without spaces), then generic and salt, strength, dosage form and
+manufacturer; a candidate that contradicts the pack loses. Strong match → the medicine; weak → the user chooses from
+the top 3 or types the name; none → "not in our medicine list", with the expiry check still shown. Dates are taken
+only next to an EXP / MFG label; thresholds are in `config/expiry.ts` and `config/pack-identify.ts`.
+
 **Privacy note on Gemini:** on Google's free (unpaid) tier, Google may use submitted content to improve its
 products and human reviewers may read it. For real patient data, use a paid (billing-enabled) Gemini project, or
 Anthropic, under terms that do not use API data for training.

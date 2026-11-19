@@ -105,6 +105,11 @@ export function searchBrands(db: Database.Database, query: string, maxBrands = 8
   });
 }
 
+/** All products of one brand key, e.g. "nopain" → Nopain Tablet 25mg, Tablet 50mg, Eye Drops. */
+export function productsByBrandKey(db: Database.Database, brandKey: string): Product[] {
+  return (db.prepare(`${SELECT} WHERE p.brand_key = ? ORDER BY p.form, p.strength_key`).all(brandKey) as ProductRow[]).map(toProduct);
+}
+
 export function getProduct(db: Database.Database, id: number): Product | null {
   const row = db.prepare(`${SELECT} WHERE p.id = ?`).get(id) as ProductRow | undefined;
   return row ? toProduct(row) : null;
