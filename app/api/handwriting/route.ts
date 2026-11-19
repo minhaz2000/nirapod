@@ -1,18 +1,17 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import Anthropic from '@anthropic-ai/sdk';
-import { jsonSchemaOutputFormat } from '@anthropic-ai/sdk/helpers/json-schema';
-import { aiAvailable, getAnthropic } from '@/lib/server/anthropic';
+import { llmAvailable, llmJson, llmProvider } from '@/lib/server/llm';
 import { redact } from '@/lib/privacy/redact';
 
 /**
- * POST /api/handwriting — reads a handwritten prescription photo with the Anthropic API.
+ * POST /api/handwriting — reads a handwritten prescription photo with the configured language model
+ * (Anthropic or Google Gemini, see lib/server/llm-select.ts).
  *
  * - The client crops the header (name, phone, address) off the photo before sending (rule 9); text that comes back
  *   is redacted again here. Nothing is stored or logged.
  * - The result is a list for the USER TO CONFIRM OR EDIT line by line before anything uses it (rule 7).
- * - Without ANTHROPIC_API_KEY / ANTHROPIC_MODEL it returns 503 { error: 'not_available' } and the app falls back
+ * - Without a configured provider (key + model) it returns 503 { error: 'not_available' } and the app falls back
  *   to typing or picking medicines from the database.
- * GET /api/handwriting → { available } so the UI can say up front whether reading is possible.
+ * GET /api/handwriting → { available, provider } (provider name only, never the key or model) so the UI can say up front whether reading is possible.
  */
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -78,12 +77,11 @@ function clean(item: HandwritingItem): HandwritingItem {
 }
 
 export async function GET() {
-  return NextResponse.json({ available: aiAvailable() }, { headers: { 'Cache-Control': 'no-store' } });
+  return NextResponse.json({ available: llmAvailable(), provider: llmProvider() }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 export async function POST(req: NextRequest) {
-  const ai = getAnthropic();
-  if (!ai) return NextResponse.json({ error: 'not_available' }, { status: 503 });
+  if (!llmAvailable()) return NextResponse.json({ error: 'not_available' }, { status: 503 });
 
   let body: { image?: unknown; mediaType?: unknown };
   try {
@@ -97,29 +95,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_image' }, { status: 400 });
   }
 
-  try {
-    const response = await ai.client.messages.parse({
-      model: ai.model,
-      max_tokens: 4000,
-      system: SYSTEM,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: mediaType, data: image } },
-            { type: 'text', text: 'Transcribe the medicines on this prescription.' },
-          ],
-        },
-      ],
-      output_config: { format: jsonSchemaOutputFormat(SCHEMA) },
-    });
-    if (response.stop_reason === 'refusal' || !response.parsed_output) {
-      return NextResponse.json({ error: 'failed' }, { status: 502 });
-    }
-    const items = (response.parsed_output.items as HandwritingItem[]).slice(0, 25).map(clean).filter((i) => i.medicine || i.strength);
-    return NextResponse.json({ status: 'ok', items }, { headers: { 'Cache-Control': 'no-store' } });
-  } catch (err) {
-    const status = err instanceof Anthropic.RateLimitError ? 429 : 502;
-    return NextResponse.json({ error: status === 429 ? 'busy' : 'failed' }, { status });
+  const result = await llmJson<{ items?: unknown }>({
+    system: SYSTEM,
+    text: 'Transcribe the medicines on this prescription.',
+    image: { base64: image, mediaType },
+    schema: SCHEMA,
+    maxTokens: 4000,
+  });
+  if (!result.ok) {
+    return result.error === 'busy'
+      ? NextResponse.json({ error: 'busy' }, { status: 429 })
+      : NextResponse.json({ error: 'failed' }, { status: 502 });
   }
+  const raw = Array.isArray(result.value.items) ? (result.value.items as HandwritingItem[]) : null;
+  if (!raw) return NextResponse.json({ error: 'failed' }, { status: 502 });
+  // Rule 7: these are only suggestions; the user confirms or edits every line before it is used.
+  const items = raw.slice(0, 25).map(clean).filter((i) => i.medicine || i.strength);
+  return NextResponse.json({ status: 'ok', items }, { headers: { 'Cache-Control': 'no-store' } });
 }

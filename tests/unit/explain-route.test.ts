@@ -37,12 +37,11 @@ async function post(body: unknown = BODY) {
 describe('/api/explain', () => {
   beforeEach(() => {
     create.mockReset();
-    delete process.env.ANTHROPIC_API_KEY;
-    delete process.env.ANTHROPIC_MODEL;
+    for (const k of ['ANTHROPIC_API_KEY', 'ANTHROPIC_MODEL', 'GEMINI_API_KEY', 'GEMINI_MODEL', 'LLM_PROVIDER']) delete process.env[k];
   });
   afterEach(() => {
-    delete process.env.ANTHROPIC_API_KEY;
-    delete process.env.ANTHROPIC_MODEL;
+    for (const k of ['ANTHROPIC_API_KEY', 'ANTHROPIC_MODEL', 'GEMINI_API_KEY', 'GEMINI_MODEL', 'LLM_PROVIDER']) delete process.env[k];
+    vi.unstubAllGlobals();
   });
 
   it('without an API key returns the template explanation in the user\'s language', async () => {
@@ -93,6 +92,32 @@ describe('/api/explain', () => {
       create.mockResolvedValueOnce({ stop_reason: 'refusal', content: [] });
       expect((await post()).json).toMatchObject({ source: 'template' });
       create.mockRejectedValueOnce(new Error('down'));
+      expect((await post()).json).toMatchObject({ source: 'template', reason: 'ai_error' });
+    });
+  });
+
+  describe('with Gemini', () => {
+    const geminiText = (text: string, finishReason = 'STOP') =>
+      vi.fn(async () => new Response(JSON.stringify({ candidates: [{ finishReason, content: { parts: [{ text }] } }] })));
+    beforeEach(() => {
+      process.env.GEMINI_API_KEY = 'g-key';
+      process.env.GEMINI_MODEL = 'gemini-model-from-env';
+    });
+
+    it('is used when it is the only configured provider; the same validator applies (rule 8)', async () => {
+      const ok = geminiText('- Your FBS is 7.8 mmol/L, above the range 3.9 - 5.6.\n- Ask your doctor; do not stop on your own.');
+      vi.stubGlobal('fetch', ok);
+      expect((await post()).json).toMatchObject({ source: 'ai' });
+      const body = JSON.parse((ok.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
+      expect(body.systemInstruction.parts[0].text).toMatch(/Never give dose advice/);
+      expect(JSON.parse(body.contents[0].parts[0].text)).toMatchObject({ medicines: [{ brand: 'Comet' }] });
+      expect(create).not.toHaveBeenCalled();
+
+      vi.stubGlobal('fetch', geminiText('- Comet and Seclo are used for this.'));
+      expect((await post()).json).toMatchObject({ source: 'template', reason: 'validation_failed:unknownMedicine' });
+      vi.stubGlobal('fetch', geminiText('- FBS is', 'MAX_TOKENS'));
+      expect((await post()).json).toMatchObject({ source: 'template', reason: 'incomplete' });
+      vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('offline'); }));
       expect((await post()).json).toMatchObject({ source: 'template', reason: 'ai_error' });
     });
   });

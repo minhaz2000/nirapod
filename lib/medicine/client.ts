@@ -48,3 +48,37 @@ export async function searchCandidates(candidates: readonly string[], maxBrands 
   }
   return [...seen.values()].sort((a, b) => a.score - b.score).slice(0, maxBrands);
 }
+
+export interface NameSuggestion {
+  name: string;
+  kind: 'brand' | 'generic';
+  generic: string | null;
+}
+
+/** Medicine-name autocomplete (brand and generic, Latin or Bangla), from the local medicine database. */
+export async function suggestMedicineNames(query: string): Promise<NameSuggestion[]> {
+  const q = redact(query).replace(/\[[A-Z]+\]/g, ' ').trim();
+  const res = await getJson<{ suggestions: NameSuggestion[] }>(`/api/medicines/suggest?q=${encodeURIComponent(q)}`);
+  return res.suggestions ?? [];
+}
+
+export interface NameMatch extends NameSuggestion {
+  exact: boolean;
+}
+
+/** Closest medicine name for each name read on the phone (null where nothing is close). Redacted before sending. */
+export async function matchMedicineNames(names: string[]): Promise<(NameMatch | null)[]> {
+  let res: Response;
+  try {
+    res = await fetch('/api/medicines/match', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ names: names.map((n) => redact(n).replace(/\[[A-Z]+\]/g, ' ').trim()) }),
+    });
+  } catch {
+    throw new MedicineApiFailure('offline');
+  }
+  if (res.status === 503) throw new MedicineApiFailure('dataMissing');
+  if (!res.ok) throw new MedicineApiFailure('generic');
+  return ((await res.json()) as { matches: (NameMatch | null)[] }).matches;
+}

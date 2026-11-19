@@ -16,6 +16,7 @@ import type { RxLine } from './types';
 export default function ExplainFlow() {
   const t = useTranslations('medicine.explain');
   const [ai, setAi] = useState<boolean | null>(null);
+  const [provider, setProvider] = useState<'anthropic' | 'gemini' | null>(null);
   const [demo, setDemo] = useState(false);
   const [profile, setProfile] = useState<HealthProfile>(EMPTY_PROFILE);
   const [values, setValues] = useState<CheckedValue[]>([]);
@@ -26,7 +27,10 @@ export default function ExplainFlow() {
   useEffect(() => {
     fetch('/api/handwriting')
       .then((r) => r.json())
-      .then((j: { available: boolean }) => setAi(j.available))
+      .then((j: { available: boolean; provider?: 'anthropic' | 'gemini' | null }) => {
+        setAi(j.available);
+        setProvider(j.provider ?? null);
+      })
       .catch(() => setAi(false));
     getSettings()
       .then((s) => setDemo(s.demoMode))
@@ -61,7 +65,7 @@ export default function ExplainFlow() {
       <p>{t('intro')}</p>
       {ai !== null && (
         <div data-testid={ai ? 'ai-on' : 'ai-off'}>
-          <Notice tone={ai ? 'info' : 'warning'}>{ai ? t('aiOn') : t('aiOff')}</Notice>
+          <Notice tone={ai ? 'info' : 'warning'}>{ai ? t('aiOn', { provider: t(`provider.${provider ?? 'none'}`) }) : t('aiOff')}</Notice>
         </div>
       )}
 
