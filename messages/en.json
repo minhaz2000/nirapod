@@ -120,12 +120,20 @@
     }
   },
   "camera": {
-    "take": "Take or choose a photo",
     "selected": "Photo selected: {name}",
     "livePreview": "Live camera preview",
     "startPreview": "Start live camera",
     "stopPreview": "Stop camera",
-    "previewUnavailable": "Live preview is not available on this device. Use the button above instead."
+    "previewUnavailable": "Live preview is not available on this device. Use the buttons above instead.",
+    "takePhoto": "Take photo",
+    "gallery": "Choose from gallery",
+    "dropHint": "Or drag an image here, or paste it (Ctrl+V)",
+    "dropZone": "Photo drop area",
+    "unsupported": "This photo cannot be opened here (for example HEIC). Please choose a JPG or PNG photo.",
+    "notImage": "This file is not a photo. Please choose a JPG or PNG photo.",
+    "tooLarge": "This file is too large. Please choose a smaller photo (JPG or PNG).",
+    "empty": "This file is empty. Please choose a JPG or PNG photo.",
+    "checking": "Opening photo…"
   },
   "model": {
     "notLoaded": "Model not loaded yet. This feature will work once the model is added.",
@@ -745,7 +753,7 @@
         "speed": "Runs on the phone in about {seconds, number} seconds; photos are not uploaded.",
         "medicines": "Medicine database of {products, number} products, used for checks and cheaper same-medicine brands.",
         "learning": "Personal learning: after your 2-hour sugar readings, the meal signal adapts to you.",
-        "skin": "Skin screening model: in preparation."
+        "skin": "Skin screening model: coming in the next phase."
       },
       "scaleTitle": "Built for Bangladesh, designed to scale",
       "scale": {

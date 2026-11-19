@@ -65,7 +65,7 @@ export default function PrescriptionStep({ ai, demo, lines, setLines, diagnosis,
 
   async function onPhoto(blob: Blob, fromDemo = false) {
     const { decodeImage } = await import('@/lib/ocr/canvas');
-    setBitmap(await decodeImage(blob));
+    setBitmap(await decodeImage(blob)); // PhotoError reaches CameraCapture, which shows the JPG / PNG message
     setIsDemoImage(fromDemo);
     setNotice(null);
     // If the photo arrives before the availability check finished, ask now instead of guessing.

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import CameraCapture from '@/components/CameraCapture';
+import { PhotoError } from '@/lib/image/photo';
 import Notice from '@/components/Notice';
 import { parseRangeText, parseReport } from '@/lib/ocr/report';
 import { checkReport, checkValue, type CheckedValue } from '@/lib/rules/report-ranges';
@@ -43,7 +44,11 @@ export default function ReportStep({ values, onChange, demo }: Props) {
       const checked = checkReport(parseReport(ocr.text));
       onChange(checked);
       setState(checked.length ? { k: 'idle' } : { k: 'none' });
-    } catch {
+    } catch (err) {
+      if (err instanceof PhotoError) {
+        setState({ k: 'idle' });
+        throw err; // CameraCapture shows the JPG / PNG message
+      }
       setState({ k: 'error' });
     }
   }

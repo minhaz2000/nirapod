@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import CameraCapture from '@/components/CameraCapture';
+import { loadPhoto } from '@/lib/image/photo';
 import ModelStatus from '@/components/ModelStatus';
 import Notice from '@/components/Notice';
 import { LEARNING } from '@/config/meal-signal';
@@ -83,9 +84,11 @@ export default function MealCheck({ personId, profile, demo, onSaved }: Props) {
       setAnalysis(null);
       return setStep({ k: 'confirm' });
     }
+    // Decode first (upright, longest side ≤ 1600 px): a file the browser cannot open throws PhotoError here, while
+    // the photo buttons are still on screen to show the JPG / PNG message.
+    const { bitmap } = await loadPhoto(blob);
     setStep({ k: 'analysing' });
     try {
-      const bitmap = await createImageBitmap(blob, { imageOrientation: 'from-image' });
       bitmapRef.current = bitmap;
       const result = await analysePlate(bitmap, model.session, model.meta);
       setAnalysis(result);

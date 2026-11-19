@@ -1,12 +1,14 @@
 /** Browser-only image plumbing: decode the photo, check quality, straighten and boost contrast for OCR. */
 import { IMAGE_QUALITY } from '@/config/image-quality';
 import { assessQuality, type QualityReport } from '@/lib/ai/quality';
+import { loadPhoto } from '@/lib/image/photo';
 import { estimateSkewAngle, stretchContrast, toGrayscale } from './image';
 
 const OCR_MAX_SIDE = 2400;
 
+/** Upright, memory-safe bitmap (see lib/image/photo.ts); throws PhotoError for files that cannot be opened. */
 export async function decodeImage(file: Blob): Promise<ImageBitmap> {
-  return createImageBitmap(file, { imageOrientation: 'from-image' });
+  return (await loadPhoto(file)).bitmap;
 }
 
 function drawScaled(bitmap: ImageBitmap, maxSide: number, allowUpscale = false) {
