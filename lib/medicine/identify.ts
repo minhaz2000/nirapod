@@ -32,6 +32,8 @@ export type CheckResult = 'match' | 'contradicts' | 'unknown';
 
 export interface ScoredCandidate {
   product: Product;
+  /** How the brand matched what was read: same name (spaces ignored), a small typo, or only partly (prefix etc.). */
+  brandMatch: 'exact' | 'typo' | 'partial';
   /** The phrase that matched the brand, and how (lower = better). */
   brandPhrase: string;
   brandScore: number;
@@ -151,13 +153,25 @@ interface BrandHit {
   key: string;
   score: number;
   phrase: string;
+  match: 'exact' | 'typo' | 'partial';
+}
+
+/** Same name (ignoring spaces and OCR slips), one small typo, or only partly the same. */
+function matchKind(phraseKey: string, key: string): BrandHit['match'] {
+  const variants = [phraseKey, foldOcrConfusions(phraseKey)].map((v) => v.replace(/ /g, ''));
+  const k = key.replace(/ /g, '');
+  if (variants.includes(k)) return 'exact';
+  // A typo only counts for names of 5+ letters: "Pain" vs "Paino" is too short to tell a slip from another brand.
+  if (variants[0]!.length < 5) return 'partial';
+  const d = Math.min(...variants.map((v) => editDistance(v, k)));
+  return d <= maxTypos(k.length) && d <= maxTypos(variants[0]!.length) ? 'typo' : 'partial';
 }
 
 function brandHits(evidence: PackEvidence, c: DbCache, log: string[]): BrandHit[] {
   const best = new Map<string, BrandHit>();
   const add = (key: string, score: number, phrase: string) => {
     const prev = best.get(key);
-    if (!prev || score < prev.score) best.set(key, { key, score, phrase });
+    if (!prev || score < prev.score) best.set(key, { key, score, phrase, match: matchKind(nameKey(phrase), key) });
   };
   evidence.brandTexts.slice(0, 12).forEach((phrase, i) => {
     const penalty = i * PACK_IDENTIFY.prominencePenalty;
@@ -241,7 +255,7 @@ function describe(c: ScoredCandidate): string {
     .filter(([, v]) => v !== 'unknown')
     .map(([k, v]) => `${k} ${v}`)
     .join(', ');
-  return `${p.brand} ${p.strength || '?'} ${p.form} (${p.generic ?? 'generic unknown'}): brand ${c.brandScore.toFixed(2)} via "${c.brandPhrase}"${checks ? `; ${checks}` : ''} → ${c.total.toFixed(2)}${c.contradicts ? ' [contradicts the pack]' : ''}`;
+  return `${p.brand} ${p.strength || '?'} ${p.form} (${p.generic ?? 'generic unknown'}): brand ${c.brandMatch} ${c.brandScore.toFixed(2)} via "${c.brandPhrase}"${checks ? `; ${checks}` : ''} → ${c.total.toFixed(2)}${c.contradicts ? ' [contradicts the pack]' : ''}`;
 }
 
 /** Identifies the medicine in a pack from what was read. `loadProducts` returns the products of a brand key. */
@@ -268,23 +282,27 @@ export function identifyPack(db: Database.Database, evidence: PackEvidence, load
         (checks.form === 'match' ? 1 : 0) +
         (checks.manufacturer === 'match' ? 1.5 : 0) -
         values.filter((v) => v === 'contradicts').length * 10;
-      scored.push({ product, brandPhrase: h.phrase, brandScore: h.score, checks, contradicts, corroborations, total });
+      scored.push({ product, brandMatch: h.match, brandPhrase: h.phrase, brandScore: h.score, checks, contradicts, corroborations, total });
     }
   }
   scored.sort((a, b) => Number(a.contradicts) - Number(b.contradicts) || b.total - a.total || a.brandScore - b.brandScore);
   for (const s of scored.slice(0, 12)) log.push(`candidate: ${describe(s)}`);
 
-  const plausible = scored.filter((s) => !s.contradicts && (s.brandScore <= PACK_IDENTIFY.weakBrandMaxScore || s.checks.generic === 'match'));
+  // A candidate is related to the pack only if its brand is (nearly) what was read, or a printed detail agrees.
+  // Unrelated look-alikes ("Pain" → Paino) are never offered.
+  const related = (s: ScoredCandidate) => s.brandMatch !== 'partial' || s.corroborations >= 1;
+  const plausible = scored.filter((s) => !s.contradicts && related(s) && (s.brandScore <= PACK_IDENTIFY.weakBrandMaxScore || s.checks.generic === 'match'));
   const best = plausible[0] ?? null;
-  const offer = [...plausible, ...scored.filter((s) => !plausible.includes(s))].slice(0, PACK_IDENTIFY.offer);
+  const offer = plausible.slice(0, PACK_IDENTIFY.offer);
 
   if (!best) {
     log.push('verdict: none — no database medicine agrees with the pack');
-    return { verdict: 'none', best: null, candidates: offer.filter((s) => !s.contradicts), log };
+    return { verdict: 'none', best: null, candidates: [], log };
   }
   const runnerUp = plausible[1];
   const margin = runnerUp ? best.total - runnerUp.total : Infinity;
   const strong =
+    best.brandMatch !== 'partial' &&
     best.brandScore <= PACK_IDENTIFY.strongBrandMaxScore && best.corroborations >= PACK_IDENTIFY.minCorroborations && margin >= PACK_IDENTIFY.minMargin;
   log.push(
     `verdict: ${strong ? 'strong' : 'weak'} — best ${best.product.brand} ${best.product.strength} (brand ${best.brandScore.toFixed(2)}, ${best.corroborations} printed details agree, margin ${Number.isFinite(margin) ? margin.toFixed(2) : 'none'} over ${runnerUp ? `${runnerUp.product.brand} ${runnerUp.product.strength}` : 'no other candidate'})`,

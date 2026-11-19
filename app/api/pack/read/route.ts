@@ -74,7 +74,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  if (!llmAvailable()) return NextResponse.json({ error: 'not_available' }, { status: 503 });
+  if (!llmAvailable()) {
+    console.error('[llm] pack-read failed: missing_key (no provider configured)');
+    return NextResponse.json({ error: 'not_available', reason: 'missing_key' }, { status: 503 });
+  }
   let body: { image?: unknown; mediaType?: unknown };
   try {
     body = await req.json();
@@ -87,6 +90,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'invalid_image' }, { status: 400 });
   }
   const result = await llmJson<Record<string, unknown>>({
+    op: 'pack-read',
     system: SYSTEM,
     text: 'Read this medicine pack.',
     image: { base64: image, mediaType },
@@ -94,9 +98,10 @@ export async function POST(req: NextRequest) {
     maxTokens: 3000,
   });
   if (!result.ok) {
-    return result.error === 'busy'
-      ? NextResponse.json({ error: 'busy' }, { status: 429 })
-      : NextResponse.json({ error: 'failed' }, { status: 502 });
+    // The reason (e.g. invalid_model, quota) is shown to the user as "AI reading unavailable" and logged above.
+    return result.error === 'quota'
+      ? NextResponse.json({ error: 'busy', reason: result.error }, { status: 429 })
+      : NextResponse.json({ error: 'failed', reason: result.error }, { status: 502 });
   }
   if (!result.value || typeof result.value !== 'object') return NextResponse.json({ error: 'failed' }, { status: 502 });
   return NextResponse.json({ status: 'ok', fields: clean(result.value) }, { headers: { 'Cache-Control': 'no-store' } });

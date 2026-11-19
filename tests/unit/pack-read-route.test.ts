@@ -47,7 +47,7 @@ describe('/api/pack/read', () => {
       expect(Object.keys(sent.generationConfig.responseSchema.properties)).toEqual(['brand', 'generic', 'strength', 'dosage_form', 'manufacturer', 'expiry_date', 'manufacturing_date', 'batch_number', 'dar_number', 'visible_text']);
       expect(sent.systemInstruction.parts[0].text).toMatch(/Never guess/);
       expect(sent.systemInstruction.parts[0].text).toMatch(/genuine or fake/);
-      expect(sent.contents[0].parts[0].inline_data).toEqual({ mime_type: 'image/jpeg', data: IMAGE });
+      expect(sent.contents[0].parts[0].inlineData).toEqual({ mimeType: 'image/jpeg', data: IMAGE });
     });
 
     it('missing fields become empty strings; failures and rate limits are reported', async () => {

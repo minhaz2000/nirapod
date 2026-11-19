@@ -559,7 +559,7 @@
       "consent": "The photo will be sent to an AI service to read the pack. Medicine packs carry no personal details, and nothing is stored.",
       "consentContinue": "Continue",
       "consentLocal": "Read on this phone instead",
-      "aiFallback": "The AI service could not be reached, so the pack was read on this phone.",
+      "aiFallback": "AI reading unavailable right now — read on the phone instead",
       "notSure": {
         "title": "Not sure which medicine this is",
         "hint": "Choose the medicine printed on your pack, or type its name. Nothing else is shown until you choose.",
@@ -575,6 +575,16 @@
         "add": "Add back/side of the pack",
         "hint": "The expiry date is often printed on the back or side.",
         "added": "Back/side of the pack added."
+      },
+      "unreadable": {
+        "title": "We couldn't read this pack. Try a clearer photo or type the name",
+        "tipsTitle": "Tips for a readable photo:",
+        "tips": {
+          "glare": "Shiny foil strips reflect light: tilt the strip until the glare is gone, or shade it with your hand.",
+          "box": "Photograph the printed box instead, if it is at hand — it is much easier to read than the foil strip.",
+          "steady": "Hold the phone steady and close enough that the name fills most of the photo; tap to focus.",
+          "light": "Use daylight or a bright room; avoid the flash, which causes glare."
+        }
       }
     },
     "explain": {

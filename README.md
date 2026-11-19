@@ -77,6 +77,14 @@ manufacturer; a candidate that contradicts the pack loses. Strong match → the 
 the top 3 or types the name; none → "not in our medicine list", with the expiry check still shown. Dates are taken
 only next to an EXP / MFG label; thresholds are in `config/expiry.ts` and `config/pack-identify.ts`.
 
+**Checking the AI setup:** open `/api/llm/health` on the deployed site. It makes one tiny real call to the
+configured provider and returns `ok: true`, or the exact error (`missing_key`, `missing_model`, `invalid_key`,
+`invalid_model`, `quota`, `permission`, `network`, `timeout`) with advice, the model IDs the key can use (`models`,
+from Gemini `models.list`) and suggested ones (`suggested`). It never returns the key; results are cached for 30 s.
+Set `HEALTH_TOKEN` to require `?token=…`. Gemini keys may start with `AIza` or `AQ.`; both are sent in the
+`x-goog-api-key` header. Every AI failure is logged on the server as `[llm] <operation> via <provider> failed: <kind>`
+(see the Vercel function logs) and the user is told "AI reading unavailable right now — read on the phone instead".
+
 **Privacy note on Gemini:** on Google's free (unpaid) tier, Google may use submitted content to improve its
 products and human reviewers may read it. For real patient data, use a paid (billing-enabled) Gemini project, or
 Anthropic, under terms that do not use API data for training.

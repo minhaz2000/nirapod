@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
   const db = getMedicineDb();
   if (!db) return reply('template', templateText, 'data_not_built'); // cannot validate medicine names → do not use AI
 
-  const result = await llmText({ system: systemPrompt(input.locale), text: JSON.stringify(facts(input)), maxTokens: 2000 });
+  const result = await llmText({ op: 'explain', system: systemPrompt(input.locale), text: JSON.stringify(facts(input)), maxTokens: 2000 });
   if (!result.ok) return reply('template', templateText, result.error === 'incomplete' ? 'incomplete' : 'ai_error');
   // Rule 8: any new medicine name, number or dose advice → the template is used instead.
   const check = validateExplanation(result.value, input, { dictionary: medicineDictionary(db), allowedText: templateText });

@@ -89,7 +89,7 @@ describe('/api/handwriting', () => {
       parse.mockResolvedValueOnce({ stop_reason: 'refusal', parsed_output: null });
       expect((await POST(req({ image: IMAGE, mediaType: 'image/png' }))).status).toBe(502);
       parse.mockRejectedValueOnce(new Error('network'));
-      expect(await (await POST(req({ image: IMAGE, mediaType: 'image/png' }))).json()).toEqual({ error: 'failed' });
+      expect(await (await POST(req({ image: IMAGE, mediaType: 'image/png' }))).json()).toEqual({ error: 'failed', reason: 'unknown' });
     });
   });
 
@@ -119,7 +119,7 @@ describe('/api/handwriting', () => {
       expect((init.headers as Record<string, string>)['x-goog-api-key']).toBe('g-key');
       expect(url).not.toContain('g-key'); // the key is sent in a header, never in the URL
       const body = JSON.parse(init.body as string);
-      expect(body.contents[0].parts[0]).toEqual({ inline_data: { mime_type: 'image/png', data: IMAGE } });
+      expect(body.contents[0].parts[0]).toEqual({ inlineData: { mimeType: 'image/png', data: IMAGE } });
       expect(body.systemInstruction.parts[0].text).toMatch(/Do not add, guess, correct or complete/);
       expect(body.generationConfig.responseMimeType).toBe('application/json');
       expect(body.generationConfig.responseSchema.type).toBe('OBJECT');

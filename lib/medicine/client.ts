@@ -109,6 +109,16 @@ export async function identifyMedicine(evidence: PackEvidence): Promise<Identify
 
 export type VisionFailure = 'not_available' | 'offline' | 'busy' | 'failed';
 
+/** Thrown by readPackWithAi: the failure and the server's reason (e.g. invalid_model, quota) — never silent. */
+export class VisionError extends Error {
+  constructor(
+    public readonly failure: VisionFailure,
+    public readonly reason: string,
+  ) {
+    super(`${failure}: ${reason}`);
+  }
+}
+
 /** Reads a pack photo with the vision model (after consent). Throws a VisionFailure string on any problem. */
 export async function readPackWithAi(image: { base64: string; mediaType: 'image/jpeg' }): Promise<VisionPackFields> {
   let res: Response;
@@ -119,12 +129,13 @@ export async function readPackWithAi(image: { base64: string; mediaType: 'image/
       body: JSON.stringify({ image: image.base64, mediaType: image.mediaType }),
     });
   } catch {
-    throw 'offline' satisfies VisionFailure;
+    throw new VisionError('offline', 'network');
   }
-  if (res.status === 503) throw 'not_available' satisfies VisionFailure;
-  if (res.status === 429) throw 'busy' satisfies VisionFailure;
-  if (!res.ok) throw 'failed' satisfies VisionFailure;
-  const json = (await res.json()) as { fields?: VisionPackFields };
-  if (!json.fields) throw 'failed' satisfies VisionFailure;
+  const json = (await res.json().catch(() => ({}))) as { fields?: VisionPackFields; reason?: string };
+  const reason = json.reason ?? `http_${res.status}`;
+  if (res.status === 503) throw new VisionError('not_available', reason);
+  if (res.status === 429) throw new VisionError('busy', reason);
+  if (!res.ok) throw new VisionError('failed', reason);
+  if (!json.fields) throw new VisionError('failed', 'bad_response');
   return json.fields;
 }

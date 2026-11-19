@@ -23,7 +23,7 @@ async function mockGemini(page: Page, answers: Array<Fields | 'error'>) {
     if (route.request().method() === 'GET') return route.fulfill({ json: { available: true, provider: 'gemini' } });
     posts.push(route.request().postDataJSON());
     const a = answers[Math.min(posts.length - 1, answers.length - 1)]!;
-    return a === 'error' ? route.fulfill({ status: 502, json: { error: 'failed' } }) : route.fulfill({ json: { status: 'ok', fields: { ...EMPTY, ...a } } });
+    return a === 'error' ? route.fulfill({ status: 502, json: { error: 'failed', reason: 'invalid_model' } }) : route.fulfill({ json: { status: 'ok', fields: { ...EMPTY, ...a } } });
   });
   return posts;
 }
@@ -68,6 +68,26 @@ test('no key: the No Pain pack is read on the phone and identified as No Pain; t
   await expect(page.getByTestId('pack-results')).not.toContainText(/fake|genuine|counterfeit/i);
   await expect(page.getByTestId('pharmacist-note')).toHaveText('Confirm with your pharmacist.');
   expect(sent).toEqual([]);
+});
+
+test('a shiny strip OCR cannot read: "We couldn\'t read this pack" with tips, no unrelated candidates', async ({ page }) => {
+  test.slow();
+  await page.goto('/en/medicine');
+  await upload(page, 'tests/fixtures/packs/foil-glare.jpg');
+  const sp = page.getByTestId('scan-pack');
+  await expect(sp).toHaveAttribute('data-step', /unreadable|quality/, { timeout: 120_000 });
+  if ((await sp.getAttribute('data-step')) === 'quality') await page.getByTestId('quality-issues').getByRole('button').nth(1).click();
+  await expect(sp).toHaveAttribute('data-step', 'unreadable', { timeout: 120_000 });
+  await expect(page.getByTestId('unreadable')).toContainText("We couldn't read this pack. Try a clearer photo or type the name");
+  await expect(page.getByTestId('unreadable')).toContainText('Shiny foil strips reflect light');
+  await expect(page.getByTestId('candidate')).toHaveCount(0);
+  await expect(page.getByTestId('unreadable').getByTestId('brand-search')).toBeVisible();
+});
+
+test('health endpoint without a key reports missing_key and never a key', async ({ request }) => {
+  const body = await (await request.get('/api/llm/health')).json();
+  expect(body).toMatchObject({ ok: false, error: 'missing_key' });
+  expect(body.advice).toBeTruthy();
 });
 
 test('regression with the real No Pain photo (tests/fixtures/packs/no-pain-photo.jpg)', async ({ page }) => {
@@ -140,7 +160,9 @@ test('Gemini fails → the pack is read on the phone instead (and "Read on this 
   await upload(page, FRONT);
   await page.getByTestId('pack-consent-continue').click();
   await settle(page);
-  await expect(page.getByTestId('scan-notice-aiFallback')).toBeVisible();
+  // Never silent: the user is told, with the reason kept for support.
+  await expect(page.getByTestId('scan-notice-aiFallback')).toHaveText('AI reading unavailable right now — read on the phone instead');
+  await expect(page.getByTestId('scan-notice-aiFallback')).toHaveAttribute('data-reason', 'invalid_model');
   await expect(page.getByTestId('result-brand')).toHaveText('Nopain');
   expect(posts).toHaveLength(1);
 
