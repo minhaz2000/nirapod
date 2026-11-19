@@ -14,6 +14,14 @@ export default function AppHeader() {
         </Link>
         <div className="flex items-center gap-2">
           <Link
+            href="/assistant"
+            aria-label={t('nav.assistant')}
+            data-testid="nav-assistant"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-slate-800 hover:bg-slate-100"
+          >
+            <Icon name="chat" size={24} />
+          </Link>
+          <Link
             href="/settings"
             aria-label={t('nav.settings')}
             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-2xl text-slate-800 hover:bg-slate-100"

@@ -10,6 +10,7 @@ const MODULES = [
   { key: 'skin', href: '/skin', icon: 'skin', tone: 'border-sky-700' },
   { key: 'medicine', href: '/medicine', icon: 'pill', tone: 'border-violet-700' },
   { key: 'emergency', href: '/emergency', icon: 'ambulance', tone: 'border-red-700' },
+  { key: 'assistant', href: '/assistant', icon: 'chat', tone: 'border-teal-700' },
 ] as const satisfies ReadonlyArray<{ key: string; href: string; icon: IconName; tone: string }>;
 
 export default function HomePage({ params }: { params: Promise<{ locale: string }> }) {
