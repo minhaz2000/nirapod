@@ -106,7 +106,8 @@ Anthropic, under terms that do not use API data for training.
 A read-only Model Context Protocol server exposes the verified reference data (medicine search, exact-match
 alternatives, duplicate generics, FoodNetBD carbohydrates, expiry check, and the safety rules) to any AI assistant:
 `npm run --silent mcp` (stdio) or `POST /api/mcp` (stateless Streamable HTTP on the deployed app). No user data.
-See [mcp/README.md](mcp/README.md).
+Two more read-only servers: **Nirapod Emergency MCP** (`npm run --silent mcp:emergency`, `/api/mcp/emergency`) and
+**Nirapod Lab Report MCP** (`npm run --silent mcp:lab`, `/api/mcp/lab`). See [mcp/README.md](mcp/README.md).
 
 ## Deploying (Vercel)
 

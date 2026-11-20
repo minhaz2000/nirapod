@@ -28,6 +28,13 @@ async function mockGemini(page: Page, answers: Array<Fields | 'error'>) {
   return posts;
 }
 
+/** Opens the medicine page and waits until it knows whether AI reading is available (the scan screen asks once). */
+async function openMedicine(page: Page, locale: 'en' | 'bn' = 'en') {
+  const known = page.waitForResponse((r) => r.url().includes('/api/pack/read') && r.request().method() === 'GET');
+  await page.goto(`/${locale}/medicine`);
+  await known;
+}
+
 async function upload(page: Page, file: string, where = page.getByTestId('scan-pack')) {
   await where.getByTestId('gallery-input').first().setInputFiles(file);
 }
@@ -105,7 +112,7 @@ test('Gemini (mocked): consent first, then a strong verified match with the expi
   const posts = await mockGemini(page, [
     { brand: 'No Pain', generic: 'Diclofenac Potassium BP', strength: '50 mg', dosage_form: 'Tablet', manufacturer: 'Drug International Ltd.', expiry_date: 'EXP: AUG 27', manufacturing_date: 'SEP 25', batch_number: 'NP2509', dar_number: '076-123-045', visible_text: 'No Pain\nDiclofenac Potassium BP 50 mg\nTablet\nDrug International Ltd.' },
   ]);
-  await page.goto('/en/medicine');
+  await openMedicine(page);
   await upload(page, FRONT);
   const consent = page.getByTestId('pack-consent');
   await expect(consent).toContainText('The photo will be sent to an AI service to read the pack.');
@@ -123,7 +130,7 @@ test('Gemini (mocked): consent first, then a strong verified match with the expi
 
 test('Gemini (mocked): a weak match shows "Not sure" with candidates; nothing else until the user chooses', async ({ page }) => {
   await mockGemini(page, [{ brand: 'Napa', visible_text: 'Napa', expiry_date: '08/2027' }]);
-  await page.goto('/en/medicine');
+  await openMedicine(page);
   await upload(page, FRONT);
   await page.getByTestId('pack-consent-continue').click();
   await settle(page);
@@ -142,7 +149,7 @@ test('Gemini (mocked): a weak match shows "Not sure" with candidates; nothing el
 
 test('Gemini (mocked): a medicine not in the database is said clearly, and the expiry is still checked', async ({ page }) => {
   await mockGemini(page, [{ brand: 'Zyxorin', generic: 'Zyxoridine', strength: '20 mg', dosage_form: 'Capsule', expiry_date: '10/2026', visible_text: 'Zyxorin\nZyxoridine 20 mg\nCapsule\nEXP 10/2026' }]);
-  await page.goto('/en/medicine');
+  await openMedicine(page);
   await upload(page, FRONT);
   await page.getByTestId('pack-consent-continue').click();
   await settle(page);
@@ -156,7 +163,7 @@ test('Gemini (mocked): a medicine not in the database is said clearly, and the e
 test('Gemini fails → the pack is read on the phone instead (and "Read on this phone" sends nothing)', async ({ page }) => {
   test.slow();
   const posts = await mockGemini(page, ['error']);
-  await page.goto('/en/medicine');
+  await openMedicine(page);
   await upload(page, FRONT);
   await page.getByTestId('pack-consent-continue').click();
   await settle(page);
@@ -166,7 +173,7 @@ test('Gemini fails → the pack is read on the phone instead (and "Read on this 
   await expect(page.getByTestId('result-brand')).toHaveText('Nopain');
   expect(posts).toHaveLength(1);
 
-  await page.goto('/bn/medicine');
+  await openMedicine(page, 'bn');
   await upload(page, FRONT);
   await expect(page.getByTestId('pack-consent')).toContainText('এআই সেবায় পাঠানো হবে');
   await page.getByTestId('pack-consent-local').click();

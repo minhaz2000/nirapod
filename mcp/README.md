@@ -1,4 +1,19 @@
-# Nirapod MCP server
+# Nirapod MCP servers
+
+Three read-only MCP servers ship with Nirapod. All use the official TypeScript MCP SDK, the app's own tested rule code, no user data and no logging:
+
+| Server | stdio | Streamable HTTP | Purpose |
+|---|---|---|---|
+| **Nirapod MCP** | `npm run --silent mcp` | `/api/mcp` | medicines, alternatives, duplicate generics, food carbs, expiry |
+| **Nirapod Emergency MCP** | `npm run --silent mcp:emergency` | `/api/mcp/emergency` | danger signs, low blood sugar first, nearby hospitals |
+| **Nirapod Lab Report MCP** | `npm run --silent mcp:lab` | `/api/mcp/lab` | lab values against reference ranges, in plain words |
+
+Every answer of the Emergency and Lab Report servers passes an output check (`lib/mcp/output-safety.ts`) that
+bans "you have …", "fake", "genuine", dose-change wording and any advice to eat less.
+
+---
+
+## 1. Nirapod MCP (reference data)
 
 A **read-only [Model Context Protocol](https://modelcontextprotocol.io) server** that lets any AI assistant use
 Nirapod's verified Bangladeshi health reference data: the medicine list (brands, generics, strengths, forms, makers,
@@ -112,3 +127,111 @@ curl -s -X POST https://<your-deployment>/api/mcp \
 
 - Medicines: `medicinedb` (WSAyan), prices as of the dataset snapshot (2021-09) — see `data/raw/README.md`.
 - Foods: FoodNetBD, CC BY 4.0 — https://data.mendeley.com/datasets/23f7yxnvy7/1
+
+---
+
+## 2. Nirapod Emergency MCP
+
+Danger signs and low blood sugar with Nirapod's fixed emergency rules (`lib/rules/danger-signs.ts`,
+`config/danger-signs.ts`, `config/glucose.ts`), in English or Bangla.
+
+| Tool | Input | Returns |
+|---|---|---|
+| `check_danger_signs` | `signs[]` (checklist ids such as `chestPain`, `strokeFace`, or short descriptions) and/or `text` (free text, English or Bangla), optional `language` | `possible_emergency`, the matched signs and the app's advice. If any sign matches, the **first line** is "Possible emergency — call 999 now" (Bangla: "সম্ভাব্য জরুরি অবস্থা — এখনই ৯৯৯-এ ফোন করুন") |
+| `check_glucose_level` | `value`, `unit` (`mmol/L` or `mg/dL`), optional `when` (`fasting`, `random`, `after_meal`), `language` | Below 3.9 mmol/L (70 mg/dL) the answer **starts with** "Take something sweet now (juice, sugar or glucose). If you feel confused or faint, call 999." and never suggests eating less (rule 6); otherwise the value against the usual range |
+| `nearby_hospitals_link` | `lat`, `lon` | a Google Maps search link for hospitals near the point; the location is not stored or logged |
+
+**Resource:** `nirapod://emergency-rules` — the danger-sign list, advice, the low-sugar rule and the 999 note
+(999 connects to police, fire service and ambulance providers).
+
+Claude Desktop:
+
+```json
+{
+  "mcpServers": {
+    "nirapod-emergency": {
+      "command": "npm",
+      "args": ["--prefix", "/absolute/path/to/nirapod", "run", "--silent", "mcp:emergency"]
+    }
+  }
+}
+```
+
+Remote connector URL: `https://<your-deployment>/api/mcp/emergency`
+
+Example (illustrative):
+
+> **User:** আমার বাবার বুকে ব্যথা হচ্ছে আর ঘামছেন। কী করব?
+>
+> *The assistant calls* `check_danger_signs({"text": "আমার বাবার বুকে ব্যথা হচ্ছে আর ঘামছেন"})`.
+>
+> **Assistant:** সম্ভাব্য জরুরি অবস্থা — এখনই ৯৯৯-এ ফোন করুন। বুকে ব্যথা একটি বিপদ-চিহ্ন। ৯৯৯ আপনাকে পুলিশ, ফায়ার সার্ভিস ও অ্যাম্বুলেন্স সেবাদাতার সঙ্গে যুক্ত করে।
+>
+> **User:** My mother's sugar meter shows 60 mg/dL.
+>
+> *The assistant calls* `check_glucose_level({"value": 60, "unit": "mg/dL"})`.
+>
+> **Assistant:** Take something sweet now (juice, sugar or glucose). If she feels confused or faint, call 999.
+> 60 mg/dL (3.3 mmol/L) is below the low-sugar level (70 mg/dL). Do not give food or drink to someone who is unconscious.
+
+---
+
+## 3. Nirapod Lab Report MCP
+
+Explains a lab value against Nirapod's reference ranges (`lib/rules/report-ranges.ts`, `config/report-ranges.ts`,
+**needs clinician review**). Accepts common Bangladeshi report names (HbA1c, FBS, RBS, 2 hrs ABF, cholesterol, LDL,
+HDL, triglycerides, creatinine, SGPT, SGOT, TSH, uric acid, Hb, platelets, WBC …) and Bangla names
+(`config/lab-test-names-bn.ts`, e.g. হিমোগ্লোবিন, ক্রিয়েটিনিন, এসজিপিটি, খালি পেটে সুগার).
+
+| Tool | Input | Returns |
+|---|---|---|
+| `explain_lab_value` | `test_name`, `value`, `unit`, optional `language` | `low` / `normal` / `high`, the range used and its source, and a plain explanation that says "may" / "possible" — never a diagnosis (rule 1), never advice to change a medicine (rule 3). A glucose value below 3.9 mmol/L (70 mg/dL) gives the low-sugar guidance first |
+| `list_supported_tests` | — | every test, its English and Bangla names, units, ranges and the source of each range |
+
+**Resource:** `nirapod://lab-ranges` — the reference ranges, marked "needs clinician review".
+
+Claude Desktop:
+
+```json
+{
+  "mcpServers": {
+    "nirapod-lab": {
+      "command": "npm",
+      "args": ["--prefix", "/absolute/path/to/nirapod", "run", "--silent", "mcp:lab"]
+    }
+  }
+}
+```
+
+Remote connector URL: `https://<your-deployment>/api/mcp/lab`
+
+Example (illustrative):
+
+> **User:** My report says HbA1c 7.6%. Is that bad?
+>
+> *The assistant calls* `explain_lab_value({"test_name": "HbA1c", "value": 7.6, "unit": "%"})`.
+>
+> **Assistant:** 7.6 % is above the usual range (4.0–5.6 %). HbA1c shows average blood sugar over about 2 to 3 months,
+> so a high value may mean blood sugar has often been high. If your report prints its own range, that range wins.
+> This is general information, not a diagnosis — please discuss it with your doctor, and do not stop or change any
+> medicine on your own.
+
+### All three in Claude Desktop
+
+```json
+{
+  "mcpServers": {
+    "nirapod": { "command": "npm", "args": ["--prefix", "/absolute/path/to/nirapod", "run", "--silent", "mcp"] },
+    "nirapod-emergency": { "command": "npm", "args": ["--prefix", "/absolute/path/to/nirapod", "run", "--silent", "mcp:emergency"] },
+    "nirapod-lab": { "command": "npm", "args": ["--prefix", "/absolute/path/to/nirapod", "run", "--silent", "mcp:lab"] }
+  }
+}
+```
+
+### Tests for the Emergency and Lab Report servers
+
+- `tests/unit/mcp-emergency-lab.test.ts` — chest pain, FAST stroke signs, Bangla input, glucose 3.2 mmol/L and
+  60 mg/dL, normal glucose, HbA1c 7.6 %, Bangla test names, the output check, and both servers through in-memory
+  MCP clients.
+- `tests/e2e/mcp-emergency-lab.spec.ts` — the official MCP client against each server over **stdio** and
+  **Streamable HTTP**: list tools, call each one, read the resource; GET / DELETE 405 and the 32 KB limit.

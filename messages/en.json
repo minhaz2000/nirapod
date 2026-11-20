@@ -837,7 +837,8 @@
     "family": "For children who live away from their parents: daily check-ins, reminders in their own voice, refill and emergency alerts. It is a preview and not live yet; sharing will be opt-in by the parent and end-to-end encrypted.",
     "familyLink": "See the Family Plan preview",
     "mcpTitle": "Nirapod data for other AI assistants (MCP)",
-    "mcp": "Nirapod also offers its checked medicine list, cheaper same-generic brands, duplicate-medicine check, food carbohydrates and expiry check to other AI assistants through a read-only Model Context Protocol server. It shares only public reference data — never your data — and follows the same safety rules."
+    "mcp": "Nirapod also offers its checked medicine list, cheaper same-generic brands, duplicate-medicine check, food carbohydrates and expiry check to other AI assistants through a read-only Model Context Protocol server. It shares only public reference data — never your data — and follows the same safety rules.",
+    "mcpMore": "Two more read-only MCP servers share Nirapod's emergency rules (danger signs, low blood sugar first, nearby hospitals) and its lab report ranges (low, normal or high, explained without a diagnosis)."
   },
   "common": {
     "comingSoon": "Coming soon"
@@ -1095,6 +1096,98 @@
       "expiryUnknown": "Expiry date not readable — please check the pack, or send a photo of the side with the EXP date.",
       "notFound": "I couldn't find “{query}” in our medicine list. Please check the spelling or ask your pharmacist.",
       "unsure": "I'm not sure. Please ask a doctor or pharmacist. You can also send a photo of the pack or report."
+    }
+  },
+  "mcp": {
+    "emergency": {
+      "noSign": "No danger sign from Nirapod's checklist was found in this description. If the person seems seriously unwell, or you are not sure, call 999.",
+      "matched": "Possible danger signs:",
+      "lowBelow": "Blood sugar {value} is below the low-sugar level ({mmol} mmol/L, {mgdl} mg/dL).",
+      "notLow": "Blood sugar {value} is not below the low-sugar level ({mmol} mmol/L, {mgdl} mg/dL).",
+      "usualRange": "For a {when, select, fasting {fasting} after_meal {2-hour after-meal} other {random}} test the usual range is {range}; this value is {status, select, high {above it} low {below it} other {within it}}.",
+      "highNote": "A high value may need attention. Talk to your doctor about your targets. Ask your doctor or pharmacist; do not stop on your own.",
+      "implausible": "{value} is outside what a glucose meter usually shows. Please check the number and the unit.",
+      "hospitals": "Hospitals near this location on Google Maps: {url}",
+      "hospitalsNote": "In an emergency, call 999 first. The location is used only to make this link; it is not stored or logged.",
+      "info": "Information only, not medical advice. Nirapod does not diagnose."
+    },
+    "lab": {
+      "unknownTest": "“{name}” is not one of the tests Nirapod knows. Use list_supported_tests to see them, or ask the lab or your doctor.",
+      "noRange": "Nirapod has no reference range for {test} in {unit}. Supported units: {units}. Please use the range printed on the report.",
+      "value": "{test} {value} {unit}: {status, select, high {above} low {below} other {within}} the usual range ({range}).",
+      "printedWins": "Labs differ: if the report prints its own reference range, that range wins.",
+      "closing": "This is general information, not a diagnosis. Only a doctor can say what it means for you. Ask your doctor or pharmacist; do not stop or change any medicine on your own.",
+      "normal": "A value within the usual range is common and may need no action, but your doctor looks at all results together.",
+      "lowGlucose": "Low blood sugar: if the person feels unwell, give something sweet now (juice, sugar or glucose) and call 999 if needed.",
+      "meaning": {
+        "fasting_glucose": {
+          "high": "A high fasting blood sugar may be a sign of diabetes or of diabetes that is not well controlled.",
+          "low": "A low blood sugar can be dangerous and needs attention now."
+        },
+        "random_glucose": {
+          "high": "A high random blood sugar may be a sign of diabetes or of diabetes that is not well controlled.",
+          "low": "A low blood sugar can be dangerous and needs attention now."
+        },
+        "after_meal_glucose": {
+          "high": "A high blood sugar after a meal may be a sign of diabetes or of diabetes that is not well controlled.",
+          "low": "A low blood sugar can be dangerous and needs attention now."
+        },
+        "hba1c": {
+          "high": "HbA1c shows average blood sugar over about 2 to 3 months; a high value may mean blood sugar has often been high.",
+          "low": "A low HbA1c is unusual; it may be linked to blood conditions and is worth asking the doctor about."
+        },
+        "hemoglobin": {
+          "high": "A high haemoglobin may be seen with dehydration, smoking or some blood conditions.",
+          "low": "A low haemoglobin may be a sign of anaemia, which has many possible causes."
+        },
+        "total_cholesterol": {
+          "high": "A high cholesterol may raise the risk of heart disease over time."
+        },
+        "ldl": {
+          "high": "A high LDL (\"bad\") cholesterol may raise the risk of heart disease over time."
+        },
+        "hdl": {
+          "low": "A low HDL (\"good\") cholesterol may raise the risk of heart disease over time."
+        },
+        "triglycerides": {
+          "high": "High triglycerides may be linked to diet, diabetes or heart risk."
+        },
+        "creatinine": {
+          "high": "A high creatinine may be a sign that the kidneys are not working as well as usual.",
+          "low": "A low creatinine is often linked to low muscle mass and is usually less worrying."
+        },
+        "alt": {
+          "high": "A high SGPT (ALT) may be a sign of stress or inflammation in the liver."
+        },
+        "ast": {
+          "high": "A high SGOT (AST) may be a sign of stress in the liver or muscles."
+        },
+        "tsh": {
+          "high": "A high TSH may be a sign of an underactive thyroid.",
+          "low": "A low TSH may be a sign of an overactive thyroid."
+        },
+        "uric_acid": {
+          "high": "A high uric acid may be linked to gout or kidney stones.",
+          "low": "A low uric acid is usually not a concern."
+        },
+        "potassium": {
+          "high": "A high potassium can affect the heart and may need prompt attention.",
+          "low": "A low potassium can cause weakness and may need attention."
+        },
+        "sodium": {
+          "high": "A high sodium may be a sign of dehydration.",
+          "low": "A low sodium may cause tiredness or confusion and may need attention."
+        },
+        "platelets": {
+          "high": "A high platelet count may be seen with infection, inflammation or blood conditions.",
+          "low": "A low platelet count may raise the risk of bleeding, for example in dengue."
+        },
+        "wbc": {
+          "high": "A high white cell count may be a sign of infection or inflammation.",
+          "low": "A low white cell count may make infections more likely."
+        }
+      },
+      "source": "Fallback adult reference range from config/report-ranges.ts (needs clinician review). It ignores sex, age and pregnancy."
     }
   }
 }

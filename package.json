@@ -15,7 +15,9 @@
     "build:data": "tsx scripts/build-data.ts",
     "fetch:data": "tsx scripts/fetch-data.ts",
     "postinstall": "node scripts/copy-ocr-assets.mjs",
-    "mcp": "tsx --tsconfig ./tsconfig.json mcp/stdio.ts"
+    "mcp": "tsx --tsconfig ./tsconfig.json mcp/stdio.ts",
+    "mcp:emergency": "tsx --tsconfig ./tsconfig.json mcp/emergency-stdio.ts",
+    "mcp:lab": "tsx --tsconfig ./tsconfig.json mcp/lab-stdio.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.8.0",

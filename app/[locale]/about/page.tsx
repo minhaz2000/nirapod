@@ -26,6 +26,7 @@ export default function AboutPage({ params }: { params: Promise<{ locale: string
           {t('mcpTitle')}
         </h2>
         <p>{t('mcp')}</p>
+        <p data-testid="about-mcp-more">{t('mcpMore')}</p>
       </section>
       <section className="space-y-2 rounded-2xl bg-white p-4 shadow-sm" data-testid="about-family">
         <h2 className="flex items-center gap-2 text-lg font-bold">

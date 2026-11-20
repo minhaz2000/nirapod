@@ -30,6 +30,8 @@ test('About mentions the MCP server in both languages', async ({ page }) => {
   await page.goto('/en/about');
   await expect(page.getByTestId('about-mcp')).toContainText('Model Context Protocol');
   await expect(page.getByTestId('about-mcp')).toContainText('never your data');
+  await expect(page.getByTestId('about-mcp-more')).toContainText('emergency rules');
   await page.goto('/bn/about');
   await expect(page.getByTestId('about-mcp')).toContainText('MCP');
+  await expect(page.getByTestId('about-mcp-more')).toContainText('ল্যাব রিপোর্টের');
 });
