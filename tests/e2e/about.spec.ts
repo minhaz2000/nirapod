@@ -25,3 +25,11 @@ for (const [locale, title, map, products] of [
     expect(await section.innerText()).not.toMatch(/\p{Extended_Pictographic}/u);
   });
 }
+
+test('About mentions the MCP server in both languages', async ({ page }) => {
+  await page.goto('/en/about');
+  await expect(page.getByTestId('about-mcp')).toContainText('Model Context Protocol');
+  await expect(page.getByTestId('about-mcp')).toContainText('never your data');
+  await page.goto('/bn/about');
+  await expect(page.getByTestId('about-mcp')).toContainText('MCP');
+});

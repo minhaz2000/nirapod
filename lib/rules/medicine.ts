@@ -9,7 +9,7 @@ import { MEDICINE_CHECKS } from '@/config/medicine-checks';
 import { editDistance, foldOcrConfusions, maxTypos } from '@/lib/medicine/fuzzy';
 import { nameKey } from '@/lib/medicine/normalise';
 import { EXPIRY } from '@/config/expiry';
-import { compareDates, expiryEndDate, formatPackDate, type PackDates } from '@/lib/ocr/expiry';
+import { compareDates, expiryEndDate, formatPackDate, parseDateValue, parsePackDates, type PackDates } from '@/lib/ocr/expiry';
 
 // ---------------------------------------------------------------------------------------------------------------
 // Duplicate generics (e.g. Napa + Ace are both paracetamol)
@@ -171,4 +171,21 @@ export function expiryStatus(dates: PackDates, today: Date): ExpiryStatus {
   const daysLeft = Math.floor((end.getTime() - today.getTime()) / 86_400_000);
   const soonLimit = new Date(today.getFullYear(), today.getMonth() + EXPIRY.soonMonths, today.getDate(), 23, 59, 59);
   return end <= soonLimit ? { status: 'expiresSoon', exp, daysLeft, end } : { status: 'ok', exp, daysLeft, end };
+}
+
+/**
+ * Expiry status from printed text, e.g. "EXP 08/2027", "MFG 03/2025 EXP 02/2027", "EXP: AUG 27", "০৮/২০২৭".
+ * Labelled dates are read with the pack parser (an MFG date is never taken as the expiry). Text with no label at
+ * all is read as the expiry value itself (the caller says it is the expiry date). Anything else: not readable.
+ */
+export function expiryFromText(text: string, today: Date): { status: ExpiryStatus['status']; exp: string | null; mfg: string | null } {
+  const dates = parsePackDates(text);
+  const hasMfgLabel = /\b(?:mfg|mfd|manufactur)|উৎপাদন|উৎ\./i.test(text);
+  // One expiry value, with or without a short label ("EXP 08/2027", "মেয়াদ: ০৮/২০২৭", "08/2027"). Never when an MFG
+  // label is present: then only the parser's labelled EXP counts.
+  const single = text.replace(/^\s*(?:মেয়াদ\S*(?:\s+উত্তীর্ণের)?(?:\s+তারিখ)?|exp\S*(?:\s*date)?|use\s*(?:by|before)|best\s*before)[\s.:\-]*/i, '');
+  const exp = dates.exp ?? (hasMfgLabel ? null : parseDateValue(single, 'exp'));
+  const mfg = dates.mfg ? formatPackDate(dates.mfg) : null;
+  if (!exp) return { status: 'unknown', exp: null, mfg };
+  return { status: expiryStatus({ exp }, today).status, exp: formatPackDate(exp), mfg };
 }

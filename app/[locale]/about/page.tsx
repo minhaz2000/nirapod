@@ -20,6 +20,13 @@ export default function AboutPage({ params }: { params: Promise<{ locale: string
       <Notice>{t('privacy')}</Notice>
       <HowAiWorks />
       <LlmProvider />
+      <section className="space-y-2 rounded-2xl bg-white p-4 shadow-sm" data-testid="about-mcp">
+        <h2 className="flex items-center gap-2 text-lg font-bold">
+          <Icon name="chat" size={20} />
+          {t('mcpTitle')}
+        </h2>
+        <p>{t('mcp')}</p>
+      </section>
       <section className="space-y-2 rounded-2xl bg-white p-4 shadow-sm" data-testid="about-family">
         <h2 className="flex items-center gap-2 text-lg font-bold">
           <Icon name="users" size={20} />
