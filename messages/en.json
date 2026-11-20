@@ -835,7 +835,9 @@
     },
     "familyTitle": "Family Plan (Premium idea)",
     "family": "For children who live away from their parents: daily check-ins, reminders in their own voice, refill and emergency alerts. It is a preview and not live yet; sharing will be opt-in by the parent and end-to-end encrypted.",
-    "familyLink": "See the Family Plan preview"
+    "familyLink": "See the Family Plan preview",
+    "mcpTitle": "Nirapod data for other AI assistants (MCP)",
+    "mcp": "Nirapod also offers its checked medicine list, cheaper same-generic brands, duplicate-medicine check, food carbohydrates and expiry check to other AI assistants through a read-only Model Context Protocol server. It shares only public reference data — never your data — and follows the same safety rules."
   },
   "common": {
     "comingSoon": "Coming soon"

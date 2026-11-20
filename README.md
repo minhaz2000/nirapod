@@ -101,6 +101,13 @@ app server against a local mock of the Gemini API (`tests/e2e/mock-gemini.mjs`, 
 products and human reviewers may read it. For real patient data, use a paid (billing-enabled) Gemini project, or
 Anthropic, under terms that do not use API data for training.
 
+## Nirapod MCP server
+
+A read-only Model Context Protocol server exposes the verified reference data (medicine search, exact-match
+alternatives, duplicate generics, FoodNetBD carbohydrates, expiry check, and the safety rules) to any AI assistant:
+`npm run --silent mcp` (stdio) or `POST /api/mcp` (stateless Streamable HTTP on the deployed app). No user data.
+See [mcp/README.md](mcp/README.md).
+
 ## Deploying (Vercel)
 
 - `vercel.json` sets the build command to `npm run build:data && npm run build`, so the medicine database is

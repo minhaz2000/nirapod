@@ -5,11 +5,10 @@
  */
 import 'server-only';
 import { getMedicineDb } from '@/lib/medicine/db';
-import { findAlternatives, nameIndex, searchBrandsAndGenerics, type Product } from '@/lib/medicine/repo';
+import { bestMatch, duplicateGenerics } from '@/lib/medicine/lookup';
+import { findAlternatives, nameIndex, type Product } from '@/lib/medicine/repo';
 import { closestName } from '@/lib/medicine/suggest';
-import { parseDateValue, formatPackDate } from '@/lib/ocr/expiry';
-import { expiryStatus } from '@/lib/rules/medicine';
-import { findDuplicateIngredients, type ConfirmedMedicine } from '@/lib/rules/prescription';
+import { expiryFromText } from '@/lib/rules/medicine';
 import type { AssistantCard, MedicineSummary } from './types';
 
 export const summary = (p: Product): MedicineSummary => ({
@@ -27,14 +26,8 @@ export const summary = (p: Product): MedicineSummary => ({
 export function searchMedicine(query: string): { medicine: MedicineSummary; all: MedicineSummary[] } | null {
   const db = getMedicineDb();
   if (!db) return null;
-  const q = query.trim().slice(0, 60);
-  if (q.length < 2) return null;
-  const results = searchBrandsAndGenerics(db, q).filter((r) => r.score <= 3);
-  const first = results[0]?.products ?? [];
-  if (!first.length) return null;
-  // Prefer the tablet / capsule form most people mean, then the first strength.
-  const pick = first.find((p) => /tablet|capsule/i.test(p.form)) ?? first[0]!;
-  return { medicine: summary(pick), all: first.slice(0, 6).map(summary) };
+  const hit = bestMatch(db, query);
+  return hit ? { medicine: summary(hit.product), all: hit.all.slice(0, 6).map(summary) } : null;
 }
 
 /** Words in a free-text message that are medicine names in our database (exact or one OCR / typing slip). */
@@ -76,26 +69,16 @@ export function alternativesCard(medicine: MedicineSummary): AssistantCard | nul
 
 /** Same generic twice (e.g. Napa + Ace = paracetamol twice) among confirmed medicines. */
 export function duplicatesCard(names: readonly string[]): AssistantCard | null {
-  const found = names.map((n) => ({ name: n, hit: searchMedicine(n) })).filter((x) => x.hit);
-  if (found.length < 2) return null;
-  const meds: ConfirmedMedicine[] = found.map((f, i) => ({
-    lineId: String(i),
-    brand: f.hit!.medicine.brand,
-    generic: f.hit!.medicine.generic,
-    strength: f.hit!.medicine.strength,
-    form: f.hit!.medicine.form,
-    frequency: '',
-    duration: '',
-    pregnancyCategory: null,
-  }));
-  const groups = findDuplicateIngredients(meds).flatMap((f) => (f.code === 'duplicateIngredient' ? [{ ingredient: f.ingredient, brands: f.brands }] : []));
-  return { type: 'duplicates', groups, checked: meds.map((m) => m.brand) };
+  const db = getMedicineDb();
+  if (!db) return null;
+  const r = duplicateGenerics(db, names);
+  const checked = r.resolved.flatMap((x) => (x.brand ? [x.brand] : []));
+  if (checked.length < 2) return null;
+  return { type: 'duplicates', groups: r.groups, checked };
 }
 
 /** Expiry from a date the user typed ("EXP 08/2027", "AUG 27"); unreadable → unknown, never a guess. */
 export function expiryCard(dateText: string, today = new Date()): AssistantCard {
-  const exp = parseDateValue(dateText, 'exp');
-  if (!exp) return { type: 'expiry', status: 'unknown', exp: null };
-  const s = expiryStatus({ exp }, today);
-  return { type: 'expiry', status: s.status, exp: formatPackDate(exp) };
+  const r = expiryFromText(dateText, today);
+  return { type: 'expiry', status: r.status, exp: r.exp };
 }
